@@ -1412,6 +1412,7 @@ The response should be structured with categories and counts as specified.
     cleaned_response_text = re.sub(r'[*"#]', '', response_text)
     cleaned_response_text = re.sub(r'\s+', ' ', cleaned_response_text).strip()
     formatted_response_text = cleaned_response_text.replace('}, {', '},\n{').replace('},\n{', '},\n{')
+    formatted_response_text = formatted_response_text.replace('```python', '').replace('```', '')
 
     # Prepare the response in JSON format
     response_data = {
