@@ -1404,6 +1404,19 @@ categories ={{
    }}
     """
 
+    carrer_progress  = f"""
+        Analyze the following {pdf_text} and provide a detailed overview of the candidate's career progress. Focus on the progression of job titles, the duration of each position, key responsibilities and achievements in each role, skills acquired over time, and notable promotions. Discuss any patterns or significant milestones in the candidate's career trajectory, such as shifts in industry, increasing levels of responsibility, or specialized expertise development
+ for sub_categories i only want: Company , title, from date, to date, total duration of work in years or months as per requirment, location.
+
+ 
+ i want everything in this format
+ categories = {{
+        'sub_categories': ['Topic1', 'Topic2', 'Topic3', ...],
+        'sub_categories': ['Topic1', 'Topic2', 'Topic3', ...],
+       
+    }}
+    """
+
     # Configure and use Generative AI
     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
     if api_key is None:
@@ -1416,12 +1429,14 @@ categories ={{
         # Generate content for both prompts
         expertise_response = model.generate_content(expertise_prompt)
         job_info_response = model.generate_content(job_info_prompt)
+        carrer_progress_response = model.generate_content(carrer_progress)
     except Exception as e:
         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
 
     # Ensure response content is available
     expertise_text = getattr(expertise_response, 'text', '')
     job_info_text = getattr(job_info_response, 'text', '')
+    carrer_progress_text = getattr(carrer_progress_response, 'text', '')
     
     if not expertise_text or not job_info_text:
         return jsonify({"error": "Empty response from Generative AI"}), 500
@@ -1436,12 +1451,14 @@ categories ={{
 
     formatted_expertise_text = clean_response(expertise_text)
     formatted_job_info_text = clean_response(job_info_text)
+    formatted_carrer_progress_text = clean_response(carrer_progress_text)
 
     # Prepare the response in JSON format
     response_data = {
         'user_id': user_id,
         'expertise_response': f"expertise_response = {formatted_expertise_text}",
-        'job_info_response': f"job_info_response = {formatted_job_info_text}"
+        'job_info_response': f"job_info_response = {formatted_job_info_text}",
+        'carrer_progress_response': f"carrer_progress_response = {formatted_carrer_progress_text}"
     }
 
     return jsonify(response_data)
