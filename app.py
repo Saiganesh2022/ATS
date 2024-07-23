@@ -11391,10 +11391,10 @@ def change_password():
         return jsonify({'status': 'error', 'message': 'Invalid old password.'})
 
     if old_password == new_password:
-        return jsonify({'status': 'error', 'message': 'New password cannot be the same as the old password.'})
+        return jsonify({'status': 'error', 'message': f'New password cannot be the same as the old password.'})
 
     if new_password != confirm_password:
-        return jsonify({'status': 'error', 'message': 'New password and confirm password is not matching.'})
+        return jsonify({'status': 'error', 'message': f'New password and confirm password is not matching.'})
 
     hashed_new_password = hashlib.sha256(new_password.encode()).hexdigest()
     user.password = hashed_new_password
