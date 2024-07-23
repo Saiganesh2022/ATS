@@ -1344,6 +1344,7 @@ def get_job_details_candidate(job_id):
 
     return job_details
 
+
 @app.route('/candidate_over_view', methods=['POST'])
 def candidate_over_view():
     data = request.json
@@ -1372,8 +1373,8 @@ def candidate_over_view():
     if not job_details:
         return jsonify({"error": "Job details not found"}), 404
 
-    # Refined prompt
-    prompt = f"""
+    # Prompt for expertise list
+    expertise_prompt = f"""
 Analyze this {pdf_text} and provide an accurate and detailed list of the candidate's areas of expertise. 
 Include specific skills, technologies, programming languages, frameworks, tools, and domains 
 where the candidate has demonstrated proficiency. Ensure the list is precise and comprehensive.
@@ -1389,6 +1390,20 @@ Ensure that each category has a 'count' showing the number of topics listed.
 The response should be structured with categories and counts as specified.
 """
 
+    # Prompt for candidate and job-related information
+    job_info_prompt = f"""
+"Analyze the following {pdf_text} and {job_details}. Provide the details in the format below with no theoretical explanations:
+Output format:\n
+categories ={{
+    'Candidate': ['Candidate Name'],
+    'Candidate Experience': ['Experience in years if candidate has done any internship then that period dont consider as experpence'],
+    'Skills matching percentage': ['(matching skills/total skills)*100'],
+    'Job Description experience': ['Experience mentioned in Job Description'], 
+    'Job Description package(LPA)': ['Package Details'],
+    'Budget Range': ['Budget Range for the candidate based on experience and skills']
+   }}
+    """
+
     # Configure and use Generative AI
     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
     if api_key is None:
@@ -1398,29 +1413,117 @@ The response should be structured with categories and counts as specified.
     model = genai.GenerativeModel('gemini-1.5-flash')
 
     try:
-        # Generate content
-        response = model.generate_content(prompt)
+        # Generate content for both prompts
+        expertise_response = model.generate_content(expertise_prompt)
+        job_info_response = model.generate_content(job_info_prompt)
     except Exception as e:
         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
 
     # Ensure response content is available
-    response_text = getattr(response, 'text', '')
-    if not response_text:
+    expertise_text = getattr(expertise_response, 'text', '')
+    job_info_text = getattr(job_info_response, 'text', '')
+    
+    if not expertise_text or not job_info_text:
         return jsonify({"error": "Empty response from Generative AI"}), 500
 
     # Clean and format response text
-    cleaned_response_text = re.sub(r'[*"#]', '', response_text)
-    cleaned_response_text = re.sub(r'\s+', ' ', cleaned_response_text).strip()
-    formatted_response_text = cleaned_response_text.replace('}, {', '},\n{').replace('},\n{', '},\n{')
-    formatted_response_text = formatted_response_text.replace('```python', '').replace('```', '')
+    def clean_response(text):
+        text = re.sub(r'[*"#]', '', text)
+        text = re.sub(r'\s+', ' ', text).strip()
+        text = text.replace('}, {', '},\n{').replace('},\n{', '},\n{')
+        text = text.replace('```python', '').replace('```', '')
+        return text
+
+    formatted_expertise_text = clean_response(expertise_text)
+    formatted_job_info_text = clean_response(job_info_text)
 
     # Prepare the response in JSON format
     response_data = {
         'user_id': user_id,
-        'response': formatted_response_text
+        'expertise_response': f"expertise_response = {formatted_expertise_text}",
+        'job_info_response': f"job_info_response = {formatted_job_info_text}"
     }
 
     return jsonify(response_data)
+
+
+# @app.route('/candidate_over_view', methods=['POST'])
+# def candidate_over_view():
+#     data = request.json
+#     user_id = data.get('user_id')
+#     job_id = data.get('job_id')
+#     recruiter_prompt = data.get('recruiter_prompt')
+#     pdf_base64 = data.get('resume')
+
+#     if not pdf_base64:
+#         return jsonify({"error": "Resume not provided or invalid"}), 400
+
+#     try:
+#         # Decode the base64 PDF file
+#         pdf_bytes = base64.b64decode(pdf_base64)
+#     except Exception as e:
+#         return jsonify({"error": "Failed to decode base64 PDF"}), 400
+
+#     try:
+#         # Extract text from the PDF
+#         pdf_text = extract_text_from_pdf(pdf_bytes)
+#     except Exception as e:
+#         return jsonify({"error": "Failed to extract text from PDF"}), 500
+
+#     # Fetch job details based on job_id
+#     job_details = get_job_details_candidate(job_id)
+#     if not job_details:
+#         return jsonify({"error": "Job details not found"}), 404
+
+#     # Refined prompt
+#     prompt = f"""
+# Analyze this {pdf_text} and provide an accurate and detailed list of the candidate's areas of expertise. 
+# Include specific skills, technologies, programming languages, frameworks, tools, and domains 
+# where the candidate has demonstrated proficiency. Ensure the list is precise and comprehensive.
+# Format the response as follows:
+
+# categories = {{
+#     'sub_category_1': ['Topic1', 'Topic2', 'Topic3', 'count: N'],
+#     'sub_category_2': ['Topic1', 'Topic2', 'count: N'],
+#     ...
+# }}
+
+# Ensure that each category has a 'count' showing the number of topics listed.
+# The response should be structured with categories and counts as specified.
+# """
+
+#     # Configure and use Generative AI
+#     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
+#     if api_key is None:
+#         raise ValueError("API_KEY environment variable not set")
+
+#     genai.configure(api_key=api_key)
+#     model = genai.GenerativeModel('gemini-1.5-flash')
+
+#     try:
+#         # Generate content
+#         response = model.generate_content(prompt)
+#     except Exception as e:
+#         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
+
+#     # Ensure response content is available
+#     response_text = getattr(response, 'text', '')
+#     if not response_text:
+#         return jsonify({"error": "Empty response from Generative AI"}), 500
+
+#     # Clean and format response text
+#     cleaned_response_text = re.sub(r'[*"#]', '', response_text)
+#     cleaned_response_text = re.sub(r'\s+', ' ', cleaned_response_text).strip()
+#     formatted_response_text = cleaned_response_text.replace('}, {', '},\n{').replace('},\n{', '},\n{')
+#     formatted_response_text = formatted_response_text.replace('```python', '').replace('```', '')
+
+#     # Prepare the response in JSON format
+#     response_data = {
+#         'user_id': user_id,
+#         'response': formatted_response_text
+#     }
+
+#     return jsonify(response_data)
 
 ########################################################################################
 
