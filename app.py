@@ -1644,7 +1644,8 @@ categories ={{
     """
 
     # Configure and use Generative AI
-    api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
+    # api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
+    api_key = "AIzaSyABp7NiK0EKISlDFq57qb9TKeXh8cm2M2o"
     if api_key is None:
         raise ValueError("API_KEY environment variable not set")
 
@@ -1993,23 +1994,23 @@ categories ={{
 
 #     """
 
-    # # Configure and use Generative AI
-    # api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
-    # if api_key is None:
-    #     raise ValueError("API_KEY environment variable not set")
+#     # Configure and use Generative AI
+#     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
+#     if api_key is None:
+#         raise ValueError("API_KEY environment variable not set")
 
-    # genai.configure(api_key=api_key)
-    # model = genai.GenerativeModel('gemini-1.5-flash')
+#     genai.configure(api_key=api_key)
+#     model = genai.GenerativeModel('gemini-1.5-flash')
 
-    # try:
-    #     # Generate content for both prompts
-    #     expertise_response = model.generate_content(expertise_prompt)
-    #     job_info_response = model.generate_content(job_info_prompt)
-    #     carrer_progress_response = model.generate_content(carrer_progress)
-    #     candidate_learning_response = model.generate_content(candidate_learning)
-    #     Analyze_candidate_profile_response = model.generate_content(Analyze_candidate_profile)
-    # except Exception as e:
-    #     return jsonify({"error": "Failed to generate content using Generative AI"}), 500
+#     try:
+#         # Generate content for both prompts
+#         expertise_response = model.generate_content(expertise_prompt)
+#         job_info_response = model.generate_content(job_info_prompt)
+#         carrer_progress_response = model.generate_content(carrer_progress)
+#         candidate_learning_response = model.generate_content(candidate_learning)
+#         Analyze_candidate_profile_response = model.generate_content(Analyze_candidate_profile)
+#     except Exception as e:
+#         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
 
 #     # Ensure response content is available
 #     expertise_text = getattr(expertise_response, 'text', '')
