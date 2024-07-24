@@ -1447,6 +1447,7 @@ categories ={{
         text = re.sub(r'\s+', ' ', text).strip()
         text = text.replace('}, {', '},\n{').replace('},\n{', '},\n{')
         text = text.replace('```python', '').replace('```', '')
+        text = text.replace('\n', ' ')  # Remove newline characters
         return text
 
     formatted_expertise_text = clean_response(expertise_text)
