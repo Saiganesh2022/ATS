@@ -1600,21 +1600,24 @@ Provide a comprehensive and detailed analysis of the candidate's profile, includ
 
 Ensure the analysis is well-structured and highlights key aspects of the candidate's profile in relation to the job requirements.
 """
-    # Configure and use Generative AI
+       # Configure and use Generative AI
     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
     if api_key is None:
         raise ValueError("API_KEY environment variable not set")
 
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
+
     try:
-        expertise_response = genai.generate_response(expertise_prompt)
-        job_info_response = genai.generate_response(job_info_prompt)
-        career_progress_response = genai.generate_response(career_progress_prompt)
-        learning_response = genai.generate_response(learning_prompt)
-        candidate_profile_response = genai.generate_response(candidate_profile_prompt)
+        # Generate content for both prompts
+        expertise_response = model.generate_content(expertise_prompt)
+        job_info_response = model.generate_content(job_info_prompt)
+        carrer_progress_response = model.generate_content(carrer_progress)
+        candidate_learning_response = model.generate_content(candidate_learning)
+        Analyze_candidate_profile_response = model.generate_content(Analyze_candidate_profile)
     except Exception as e:
-        return jsonify({"error": "Failed to generate responses from AI"}), 500
+        return jsonify({"error": "Failed to generate content using Generative AI"}), 500
+
 
     expertise_data = parse_expertise_text(clean_response(expertise_response))
     job_info_data = format_job_info_text(clean_response(job_info_response))
@@ -1932,23 +1935,23 @@ Ensure the analysis is well-structured and highlights key aspects of the candida
 
 #     """
 
-#     # Configure and use Generative AI
-#     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
-#     if api_key is None:
-#         raise ValueError("API_KEY environment variable not set")
+    # # Configure and use Generative AI
+    # api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
+    # if api_key is None:
+    #     raise ValueError("API_KEY environment variable not set")
 
-#     genai.configure(api_key=api_key)
-#     model = genai.GenerativeModel('gemini-1.5-flash')
+    # genai.configure(api_key=api_key)
+    # model = genai.GenerativeModel('gemini-1.5-flash')
 
-#     try:
-#         # Generate content for both prompts
-#         expertise_response = model.generate_content(expertise_prompt)
-#         job_info_response = model.generate_content(job_info_prompt)
-#         carrer_progress_response = model.generate_content(carrer_progress)
-#         candidate_learning_response = model.generate_content(candidate_learning)
-#         Analyze_candidate_profile_response = model.generate_content(Analyze_candidate_profile)
-#     except Exception as e:
-#         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
+    # try:
+    #     # Generate content for both prompts
+    #     expertise_response = model.generate_content(expertise_prompt)
+    #     job_info_response = model.generate_content(job_info_prompt)
+    #     carrer_progress_response = model.generate_content(carrer_progress)
+    #     candidate_learning_response = model.generate_content(candidate_learning)
+    #     Analyze_candidate_profile_response = model.generate_content(Analyze_candidate_profile)
+    # except Exception as e:
+    #     return jsonify({"error": "Failed to generate content using Generative AI"}), 500
 
 #     # Ensure response content is available
 #     expertise_text = getattr(expertise_response, 'text', '')
