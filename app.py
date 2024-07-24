@@ -1600,7 +1600,13 @@ Provide a comprehensive and detailed analysis of the candidate's profile, includ
 
 Ensure the analysis is well-structured and highlights key aspects of the candidate's profile in relation to the job requirements.
 """
+    # Configure and use Generative AI
+    api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
+    if api_key is None:
+        raise ValueError("API_KEY environment variable not set")
 
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
     try:
         expertise_response = genai.generate_response(expertise_prompt)
         job_info_response = genai.generate_response(job_info_prompt)
