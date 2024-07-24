@@ -1418,6 +1418,28 @@ categories ={{
        
     }}
     """
+    Analyze_candidate_profile = f"""
+    Analyze the candidate profile use this {job_details} and {pdf_text}
+        This is the flow:
+        
+1. Extract Key Skills and Domains: Identify the primary skills and domains from the {job_details}.
+ 
+2. Analyze Candidate's Profile: Compare the extracted skills and domains from the {job_details} with the candidate's skills and experience.
+ 
+3. Market Trends Analysis: Evaluate the relevance of the candidate’s skills and domains against current market trends and demands.
+ 
+
+4. Scoring/Ranking: Assign a relevance score to each candidate based on how well their skills and experience match the {job_details} and market trends.
+
+*Example Arrays*:
+- *Skills/Domain *: ["Core Java", "Spring Boot", "Database", ...]
+- *Candidate Experience *: ["High", "Low", "Moderate", ...]
+- *Relevance Score *: [5, 4, 2, 3, ...]
+
+*Output Format*: Provide the data as separate arrays in json format, without theoretical explanations, focusing on the scoring/ranking.
+
+    """
+
 
     # Configure and use Generative AI
     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
@@ -1432,6 +1454,7 @@ categories ={{
         expertise_response = model.generate_content(expertise_prompt)
         job_info_response = model.generate_content(job_info_prompt)
         carrer_progress_response = model.generate_content(carrer_progress)
+        Analyze_candidate_profile_response = model.generate_content(Analyze_candidate_profile)
     except Exception as e:
         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
 
@@ -1439,6 +1462,7 @@ categories ={{
     expertise_text = getattr(expertise_response, 'text', '')
     job_info_text = getattr(job_info_response, 'text', '')
     carrer_progress_text = getattr(carrer_progress_response, 'text', '')
+    Analyze_candidate_profile_text = getattr(Analyze_candidate_profile_response, 'text', '')
     
     if not expertise_text or not job_info_text:
         return jsonify({"error": "Empty response from Generative AI"}), 500
@@ -1455,13 +1479,15 @@ categories ={{
     formatted_expertise_text = clean_response(expertise_text)
     formatted_job_info_text = clean_response(job_info_text)
     formatted_carrer_progress_text = clean_response(carrer_progress_text)
+    formatted_Analyze_candidate_profile_text = clean_response(Analyze_candidate_profile_text)
 
     # Prepare the response in JSON format
     response_data = {
         'user_id': user_id,
         'expertise_response': f"expertise_response = {formatted_expertise_text}",
         'job_info_response': f"job_info_response = {formatted_job_info_text}",
-        'carrer_progress_response': f"carrer_progress_response = {formatted_carrer_progress_text}"
+        'carrer_progress_response': f"carrer_progress_response = {formatted_carrer_progress_text}",
+        'analyze_candidate_profile_response': f"analyze_candidate_profile_response = {formatted_Analyze_candidate_profile_text}"
     }
 
     return jsonify(response_data)
