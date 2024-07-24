@@ -1400,7 +1400,9 @@ categories ={{
     'Skills matching percentage': ['(matching skills/total skills)*100'],
     'Job Description experience': ['Experience mentioned in Job Description'], 
     'Job Description package(LPA)': ['Package Details'],
-    'Budget Range': ['Budget Range for the candidate based on experience and skills']
+    'candidate_min_budget': ['Minimum Budget for the candidate based on experience and skills'],
+    'candidate_max_budget': ['Maximum Budget for the candidate based on experience and skills']
+    
    }}
     """
 
