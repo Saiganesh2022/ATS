@@ -1363,6 +1363,7 @@ def format_analyze_candidate_profile(text):
             print(f"Error parsing response dictionary: {e}")
             return []
 
+        # Extract lists from the dictionary
         skills_domains = response_dict.get("Skills/Domain", [])
         experiences = response_dict.get("Candidate Experience", [])
         relevance_scores = response_dict.get("Relevance Score", [])
@@ -1371,6 +1372,7 @@ def format_analyze_candidate_profile(text):
             print("Length mismatch between skills/domains, experiences, and relevance scores.")
             return []
 
+        # Create a formatted result as an array of dictionaries
         result = []
         for skill, experience, score in zip(skills_domains, experiences, relevance_scores):
             result.append({
@@ -1379,6 +1381,7 @@ def format_analyze_candidate_profile(text):
                 "Relevance Score": score
             })
 
+        print("Formatted result : ", result)
         return result
     else:
         print("No matching pattern found in the response text.")
@@ -1394,6 +1397,7 @@ def format_job_info_text(text):
             print(f"Error parsing response dictionary: {e}")
             return []
 
+        # Extract data from the dictionary
         candidate = response_dict.get('Candidate', [''])[0]
         experience = response_dict.get('Candidate Experience', [''])[0]
         skills_percentage = response_dict.get('Skills matching percentage', [''])[0]
@@ -1402,6 +1406,7 @@ def format_job_info_text(text):
         min_budget = response_dict.get('candidate_min_budget', [''])[0]
         max_budget = response_dict.get('candidate_max_budget', [''])[0]
 
+        # Create a formatted result as an array of dictionaries
         result = [{
             "Candidate": candidate,
             "Candidate Experience": experience,
@@ -1412,12 +1417,15 @@ def format_job_info_text(text):
             "Candidate Maximum Budget": max_budget
         }]
 
+        print("Formatted result : ", result)
         return result
     else:
         print("No matching pattern found in the response text.")
         return []
+    
 
 def parse_career_progress(text):
+    # Define patterns for matching work experience details
     experience_patterns = [
         r'(\d+(\.\d+)?)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*(?:month|months|mo|mos)?',
         r'(\d+)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*months?',
@@ -1436,14 +1444,18 @@ def parse_career_progress(text):
         r'around\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)?\s*of\s*experience'
     ]
 
+    # Define a pattern to match the work experience details
     pattern = r'Work Experience:\s*\[\s*(.*?)\s*\]'
     match = re.search(pattern, text, re.DOTALL)
     
     if match:
         work_experience_str = match.group(1)
+        
+        # Define a pattern to match individual work experiences
         experience_pattern = r'\{\s*Company:\s*(.*?),\s*title:\s*(.*?),\s*from date:\s*(.*?),\s*to date:\s*(.*?),\s*total duration of work:\s*(.*?),\s*location:\s*(.*?)\s*\}'
         experiences = re.findall(experience_pattern, work_experience_str)
         
+        # Convert the extracted details into a list of dictionaries
         result = []
         for experience in experiences:
             company = experience[0].strip()
@@ -1453,13 +1465,18 @@ def parse_career_progress(text):
             total_duration = experience[4].strip()
             location = experience[5].strip()
 
+            # Match and parse the total duration using the experience patterns
             duration_match = None
             for pattern in experience_patterns:
                 duration_match = re.search(pattern, total_duration, re.IGNORECASE)
                 if duration_match:
                     break
 
-            total_duration = duration_match.group(0) if duration_match else "Unknown"
+            # Format the duration to be consistent
+            if duration_match:
+                total_duration = duration_match.group(0)
+            else:
+                total_duration = "Unknown"
 
             result.append({
                 "Company": company,
@@ -1475,7 +1492,9 @@ def parse_career_progress(text):
         print("No matching pattern found in the career progress response text.")
         return []
 
+
 def parse_expertise_text(text):
+    # Define a pattern to extract categories and their items
     pattern = r"categories\s*=\s*\{\s*(.*?)\s*\}"
     match = re.search(pattern, text, re.DOTALL)
     
@@ -1483,20 +1502,26 @@ def parse_expertise_text(text):
         print("No matching pattern found in the expertise text.")
         return []
 
+    # Extract the categories section
     categories_text = match.group(1)
+    
+    # Define a pattern to match each category
     category_pattern = r"'([^']+)':\s*\[(.*?)\]"
     categories = re.findall(category_pattern, categories_text, re.DOTALL)
     
     result = []
     
     for category_name, items_text in categories:
+        # Extract individual items and count
         items_pattern = r"'(.*?)'(?:,|$)"
         items = re.findall(items_pattern, items_text)
         
+        # Check for count
         count_pattern = r"count:\s*(\d+)"
         count_match = re.search(count_pattern, items_text)
         count = count_match.group(1) if count_match else str(len(items))
         
+        # Add category to result
         result.append({
             "Category": category_name,
             "Items": items,
@@ -1504,6 +1529,7 @@ def parse_expertise_text(text):
         })
     
     return result
+
 
 @app.route('/candidate_over_view', methods=['POST'])
 def candidate_over_view():
@@ -1517,15 +1543,23 @@ def candidate_over_view():
         return jsonify({"error": "Resume not provided or invalid"}), 400
 
     try:
+        # Decode the base64 PDF file
         pdf_bytes = base64.b64decode(pdf_base64)
-        pdf_text = extract_text_from_pdf(pdf_bytes)  # Assuming this function is defined elsewhere
     except Exception as e:
-        return jsonify({"error": "Failed to process PDF"}), 500
+        return jsonify({"error": "Failed to decode base64 PDF"}), 400
 
-    job_details = get_job_details_candidate(job_id)  # Assuming this function is defined elsewhere
+    try:
+        # Extract text from the PDF
+        pdf_text = extract_text_from_pdf(pdf_bytes)
+    except Exception as e:
+        return jsonify({"error": "Failed to extract text from PDF"}), 500
+
+    # Fetch job details based on job_id
+    job_details = get_job_details_candidate(job_id)
     if not job_details:
         return jsonify({"error": "Job details not found"}), 404
 
+    # Prompts (remains the same)
     expertise_prompt = f"""
 Analyze this {pdf_text} and provide an accurate and detailed list of the candidate's areas of expertise. 
 Include specific skills, technologies, programming languages, frameworks, tools, and domains 
@@ -1543,64 +1577,73 @@ The response should be structured with categories and counts as specified.
 """
 
     job_info_prompt = f"""
-"Analyze the job details for the following job ID: {job_id}, and generate the required analysis.
-The job details are as follows: {job_details}
+"Analyze the following {pdf_text} and {job_details}. Provide the details in the format below with no theoretical explanations:
+Output format:\n
+categories ={{
+    'Candidate': ['Candidate Name'],
+    'Candidate Experience': ['Experience in years if candidate has done any internship then that period dont consider as experpence'],
+    'Skills matching percentage': ['(matching skills/total skills)*100'],
+    'Job Description experience': ['Experience mentioned in Job Description'], 
+    'Job Description package(LPA)': ['Package Details'],
+    'candidate_min_budget': ['Minimum Budget in example 8 LPA for the candidate based on experience and skills'],
+    'candidate_max_budget': ['Maximum Budget in example 10 LPA for the candidate based on experience and skills']
+    
+   }}
+    """
+    carrer_progress  = f"""
+        Analyze the following {pdf_text} and provide a detailed overview of the candidate's career progress. Focus on the progression of job titles, the duration of each position, key responsibilities and achievements in each role, skills acquired over time, and notable promotions. Discuss any patterns or significant milestones in the candidate's career trajectory, such as shifts in industry, increasing levels of responsibility, or specialized expertise development
+ for sub_categories i only want: Company , title, from date, to date, total duration of work in years or months as per requirment, location.
 
-Include insights related to:
-1. Candidate's Experience: Compare candidate's experience with the job requirements.
-2. Skills Matching Percentage: How well do the candidate's skills match the job requirements?
-3. Job Description Experience: Highlight key experiences required by the job description.
-4. Job Description Package (LPA): Compare the offered package with the candidate's expectations.
-5. Candidate Minimum Budget: Minimum budget the candidate is willing to accept.
-6. Candidate Maximum Budget: Maximum budget the candidate is expecting.
+ 
+ i want everything in this format
+ categories = {{
+        'sub_categories': ['Topic1', 'Topic2', 'Topic3', ...],
+        'sub_categories': ['Topic1', 'Topic2', 'Topic3', ...],
+       
+    }}
+    """
+    candidate_learning = f"""
+       Summarize and create a timeline of learning activities for the candidate based on the provided text: {pdf_text}.
+    Courses Taken: List all courses with dates (excluding formal education like B.Tech, 12th, and 10th).
+    Skills Acquired: List skills learned, organized by month and year.
+    Certifications: List certifications obtained with dates.
+    Skill/Course/Certification Count: Provide the count of skills acquired, courses taken, and certifications obtained each month or year.
+    Ensure the data is formatted for creating a line chart representing the candidate's learning progress over time.
+    Requirements:
+    Output must be in JSON format.
+    Include only the following fields in the JSON output:
+    1. Courses Taken
+    2. Skills Acquired
+    3. Certifications
+    4. Skill/Course/Certification Count
+    Print dates with year and month only.
+    The JSON output should be structured for easy visualization in a line chart.
+        
+    """
 
-Please provide detailed and accurate analysis for each of the points mentioned.
-"""
+    Analyze_candidate_profile = f"""
+    Analyze the candidate profile use this {job_details} and {pdf_text}
+        This is the flow:
+        
+1. Extract Key Skills and Domains: Identify the primary skills and domains from the {job_details}.
+ 
+2. Analyze Candidate's Profile: Compare the extracted skills and domains from the {job_details} with the candidate's skills and experience.
+ 
+3. Market Trends Analysis: Evaluate the relevance of the candidate’s skills and domains against current market trends and demands.
+ 
 
-    career_progress_prompt = f"""
-"Analyze the career progression details of the candidate from the following resume: {pdf_text}
+4. Scoring/Ranking: Assign a relevance score to each candidate based on how well their skills and experience match the {job_details} and market trends.
 
-The resume includes:
-- Work Experience: Detailed list of the candidate's past work experiences.
-- For each work experience, extract the following details:
-  - Company
-  - Title
-  - From Date
-  - To Date
-  - Total Duration of Work
-  - Location
+*Example Arrays*:
+- *Skills/Domain *: ["Core Java", "Spring Boot", "Database", ...]
+- *Candidate Experience *: ["High", "Low", "Moderate", ...]
+- *Relevance Score *: [5, 4, 2, 3, ...]
 
-Please provide a structured and detailed breakdown of the career progression, highlighting key experiences, skills gained, and achievements. Ensure the response is clear and well-organized.
-"""
+*Output Format*: Provide the data as separate arrays in json format, without theoretical explanations, focusing on the scoring/ranking.
 
-    learning_prompt = f"""
-"Based on the candidate's profile and resume, analyze and provide insights on the candidate's learning and development journey. 
+    """
 
-Include details related to:
-- Key learning experiences
-- Courses or certifications obtained
-- Significant skills or knowledge areas developed
-- Any other relevant learning milestones
-
-Present the information in a structured and detailed format, highlighting the candidate's commitment to continuous learning and professional growth.
-"""
-
-    candidate_profile_prompt = f"""
-"Analyze the candidate's profile, including the resume details and job information provided. 
-
-Focus on:
-- Skills and Domains
-- Relevant Experience
-- Relevance Scores
-
-Provide a comprehensive and detailed analysis of the candidate's profile, including:
-- Key skills and domains
-- Total experience and its relevance to the job
-- Relevance scores and their implications for the candidate's fit for the job
-
-Ensure the analysis is well-structured and highlights key aspects of the candidate's profile in relation to the job requirements.
-"""
-       # Configure and use Generative AI
+    # Configure and use Generative AI
     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
     if api_key is None:
         raise ValueError("API_KEY environment variable not set")
@@ -1618,23 +1661,38 @@ Ensure the analysis is well-structured and highlights key aspects of the candida
     except Exception as e:
         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
 
+    # Ensure response content is available
+    expertise_text = getattr(expertise_response, 'text', '')
+    job_info_text = getattr(job_info_response, 'text', '')
+    carrer_progress_text = getattr(carrer_progress_response, 'text', '')
+    candidate_learning_text = getattr(candidate_learning_response, 'text', '')
+    
+    # Check if response text is valid and not blocked
+    try:
+        Analyze_candidate_profile_text = getattr(Analyze_candidate_profile_response, 'text', '')
+    except ValueError as e:
+        print(f"Error accessing response text: {e}")
+        return jsonify({"error": "Failed to access Analyze Candidate Profile response text"}), 500
 
-    expertise_data = parse_expertise_text(clean_response(expertise_response))
-    job_info_data = format_job_info_text(clean_response(job_info_response))
-    career_progress_data = parse_career_progress(clean_response(career_progress_response))
-    learning_data = format_analyze_candidate_profile(clean_response(learning_response))
-    candidate_profile_data = format_analyze_candidate_profile(clean_response(candidate_profile_response))
+    formatted_expertise_text = clean_response(expertise_text)
+    formatted_job_info_text = clean_response(job_info_text)
+    formatted_career_progress_text = clean_response(carrer_progress_text)
+    formatted_candidate_learning_text = clean_response(candidate_learning_text)
 
-    response = {
-        "expertise": expertise_data,
-        "job_info": job_info_data,
-        "career_progress": career_progress_data,
-        "learning": learning_data,
-        "candidate_profile": candidate_profile_data
+    formatted_Analyze_candidate_profile_text = format_analyze_candidate_profile(Analyze_candidate_profile_text)
+    formatted_job_info_text = format_job_info_text(formatted_job_info_text)
+    formatted_career_progress_text = parse_career_progress(formatted_career_progress_text)
+    formatted_expertise_text = parse_expertise_text(formatted_expertise_text)
+    response_data = {
+        'user_id': user_id,
+        'expertise_response': formatted_expertise_text,
+        'job_info_response': formatted_job_info_text,
+        'career_progress_response': formatted_career_progress_text,
+        'candidate_learning_response': formatted_candidate_learning_text,
+        'analyze_candidate_profile_response': formatted_Analyze_candidate_profile_text
     }
 
-    return jsonify(response)
-
+    return jsonify(response_data)
 
 
 # def clean_response(text):
