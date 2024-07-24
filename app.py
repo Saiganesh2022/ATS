@@ -1440,6 +1440,21 @@ categories ={{
 
     """
 
+    candidate_learning = f"""
+        "Provide a structured summary and timeline of learning activities for the candidate. Include the following data:
+
+1. *Courses Taken*: List of courses with dates.
+2. *Skills Acquired*: Skills learned, organized by month or year.
+3. *Skill Acquisition Count*: Count of skills acquired each month or year.
+4. *Certifications*: Certifications obtained with dates.
+
+Ensure the output is suitable for creating a line chart representing the candidate's learning progress over time."
+MAKE SURE THE DATA ARE IN LINE CHART ONLY.
+I WANT ONLY *1. Courses Taken:, **2. Skills Acquired:, **3. Certifications:, **4. Skill Acquisition/CERTIFICATION/COURSES Count:*, PRINT DATE WITH YEAR AND MONTH ONLY.
+I WANT EVERTHING ABOVE CATEGORISED IN JSON  FORMAT ONLY.
+        
+    """
+
 
     # Configure and use Generative AI
     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
@@ -1454,7 +1469,9 @@ categories ={{
         expertise_response = model.generate_content(expertise_prompt)
         job_info_response = model.generate_content(job_info_prompt)
         carrer_progress_response = model.generate_content(carrer_progress)
+        candidate_learning_response = model.generate_content(candidate_learning)
         Analyze_candidate_profile_response = model.generate_content(Analyze_candidate_profile)
+        
     except Exception as e:
         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
 
@@ -1462,10 +1479,20 @@ categories ={{
     expertise_text = getattr(expertise_response, 'text', '')
     job_info_text = getattr(job_info_response, 'text', '')
     carrer_progress_text = getattr(carrer_progress_response, 'text', '')
+    candidate_learning_text = getattr(candidate_learning_response, 'text', '')
     Analyze_candidate_profile_text = getattr(Analyze_candidate_profile_response, 'text', '')
     
     if not expertise_text or not job_info_text:
         return jsonify({"error": "Empty response from Generative AI"}), 500
+
+    # # Clean and format response text
+    # def clean_response(text):
+    #     text = re.sub(r'[*"#]', '', text)
+    #     text = re.sub(r'\s+', ' ', text).strip()
+    #     text = text.replace('}, {', '},\n{').replace('},\n{', '},\n{')
+    #     text = text.replace('```python', '').replace('```', '')
+    #     text = text.replace('\n', ' ')  # Remove newline characters
+    #     return text
 
     # Clean and format response text
     def clean_response(text):
@@ -1473,25 +1500,34 @@ categories ={{
         text = re.sub(r'\s+', ' ', text).strip()
         text = text.replace('}, {', '},\n{').replace('},\n{', '},\n{')
         text = text.replace('```python', '').replace('```', '')
-        text = text.replace('\n', ' ')  # Remove newline characters
+        text = text.replace('json ', '')  # Remove 'json ' prefix if present
         return text
 
     formatted_expertise_text = clean_response(expertise_text)
     formatted_job_info_text = clean_response(job_info_text)
     formatted_carrer_progress_text = clean_response(carrer_progress_text)
+    formatted_candidate_learning_text = clean_response(candidate_learning_text)
     formatted_Analyze_candidate_profile_text = clean_response(Analyze_candidate_profile_text)
 
     # Prepare the response in JSON format
+    # response_data = {
+    #     'user_id': user_id,
+    #     'expertise_response': f"expertise_response = {formatted_expertise_text}",
+    #     'job_info_response': f"job_info_response = {formatted_job_info_text}",
+    #     'carrer_progress_response': f"carrer_progress_response = {formatted_carrer_progress_text}",
+    #     'candidate_learning_response': f"candidate_learning_response = {formatted_candidate_learning_text}",
+    #     'analyze_candidate_profile_response': f"analyze_candidate_profile_response = {formatted_Analyze_candidate_profile_text}"
+    # }
     response_data = {
         'user_id': user_id,
-        'expertise_response': f"expertise_response = {formatted_expertise_text}",
-        'job_info_response': f"job_info_response = {formatted_job_info_text}",
-        'carrer_progress_response': f"carrer_progress_response = {formatted_carrer_progress_text}",
-        'analyze_candidate_profile_response': f"analyze_candidate_profile_response = {formatted_Analyze_candidate_profile_text}"
+        'expertise_response': formatted_expertise_text,
+        'job_info_response': formatted_job_info_text,
+        'carrer_progress_response': formatted_carrer_progress_text,
+        'candidate_learning_response': formatted_candidate_learning_text,
+        'analyze_candidate_profile_response': formatted_Analyze_candidate_profile_text
     }
 
     return jsonify(response_data)
-
 
 # @app.route('/candidate_over_view', methods=['POST'])
 # def candidate_over_view():
