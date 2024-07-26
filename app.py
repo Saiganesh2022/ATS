@@ -1434,25 +1434,25 @@ def parse_career_progress(text):
         r'Demonstrated\s+(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)',
         r'(\d+(\.\d+)?)\s*(?:years|yr|yrs)?\s*of\s*experience',
         r'(\d+(\.\d+)?)\s*years?\s*of\s*(?:IT|technical)?\s*experience',
-        r'(\d+)\s*-\s*(\d+)\s*(?:years|yrs|yr|months|mos|mo)?\s*experience',
-        r'experience\s*of\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)',
-        r'over\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)?\s*experience',
-        r'(?:years|yrs|yr|months|mos|mo)\s*of\s*experience\s*(\d+(\.\d+)?)',
-        r'(\d+)\s*(?:years|yrs|yr|months|mos|mo)\s*\(to\s*date\)',
-        r'total\s*experience\s*of\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)',
+        r'(\d+)\s*-\s*(\d+)\s*(?:years|yrs|yr|months|mos)?\s*experience',
+        r'experience\s*of\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos)',
+        r'over\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos)?\s*experience',
+        r'(?:years|yrs|yr|months|mos)\s*of\s*experience\s*(\d+(\.\d+)?)',
+        r'(\d+)\s*(?:years|yrs|yr|months|mos)\s*\(to\s*date\)',
+        r'total\s*experience\s*of\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos)',
         r'experience\s*(?:from|since)\s*\d{4}\s*to\s*\d{4}',
-        r'around\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)?\s*of\s*experience'
+        r'around\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos)?\s*of\s*experience'
     ]
 
-    # Define a pattern to match the work experience details
-    pattern = r'Work Experience:\s*\[\s*(.*?)\s*\]'
+    # Define a pattern to match the work experience details in the given format
+    pattern = r'\[\s*(.*?)\s*\]'
     match = re.search(pattern, text, re.DOTALL)
     
     if match:
         work_experience_str = match.group(1)
         
-        # Define a pattern to match individual work experiences
-        experience_pattern = r'\{\s*Company:\s*(.*?),\s*title:\s*(.*?),\s*from date:\s*(.*?),\s*to date:\s*(.*?),\s*total duration of work:\s*(.*?),\s*location:\s*(.*?)\s*\}'
+        # Define a pattern to match individual work experiences, including the 'Project' field
+        experience_pattern = r"\{\s*'Company':\s*'(.*?)',\s*'Title':\s*'(.*?)',\s*'From Date':\s*'(.*?)',\s*'To Date':\s*'(.*?)',\s*'Total Duration of Work':\s*'(.*?)',\s*'Location':\s*'(.*?)',\s*'Project':\s*'(.*?)'\s*\}"
         experiences = re.findall(experience_pattern, work_experience_str)
         
         # Convert the extracted details into a list of dictionaries
@@ -1464,6 +1464,7 @@ def parse_career_progress(text):
             to_date = experience[3].strip()
             total_duration = experience[4].strip()
             location = experience[5].strip()
+            project = experience[6].strip()
 
             # Match and parse the total duration using the experience patterns
             duration_match = None
@@ -1476,7 +1477,7 @@ def parse_career_progress(text):
             if duration_match:
                 total_duration = duration_match.group(0)
             else:
-                total_duration = "Unknown"
+                total_duration = " "
 
             result.append({
                 "Company": company,
@@ -1484,13 +1485,15 @@ def parse_career_progress(text):
                 "From Date": from_date,
                 "To Date": to_date,
                 "Total Duration of Work": total_duration,
-                "Location": location
+                "Location": location,
+                "Project": project
             })
 
         return result
     else:
         print("No matching pattern found in the career progress response text.")
         return []
+
 
 
 def parse_expertise_text(text):
@@ -1570,6 +1573,9 @@ def convert_to_array(candidate_learning_text):
     }
 
 
+
+
+
 @app.route('/candidate_over_view', methods=['POST'])
 def candidate_over_view():
     data = request.json
@@ -1630,14 +1636,20 @@ categories ={{
     """
 
     carrer_progress = f"""
-Analyze the following {pdf_text} and provide a detailed overview of the candidate's career progress. Focus on the progression of job titles, the duration of each position, key responsibilities and achievements in each role, skills acquired over time, and notable promotions. Discuss any patterns or significant milestones in the candidate's career trajectory, such as shifts in industry, increasing levels of responsibility, or specialized expertise development.
-For sub_categories I only want: Company, title, from date, to date, total duration of work in years or months as per requirement, location.
+Analyze the following {pdf_text} and provide a detailed overview of the candidate's career progress. Focus on the progression of job titles, the duration of each position, and notable achievements in each role. Highlight the candidate's growth and development over time, including roles, promotions, location of company, project title  and achievements. Discuss any patterns or significant milestones, such as shifts in industry, increasing levels of responsibility, or specialized expertise development.
 
-I want everything in this format:
-categories = {{
-    'sub_categories': ['Topic1', 'Topic2', 'Topic3', ...],
-    'sub_categories': ['Topic1', 'Topic2', 'Topic3', ...],
-}}
+For each role, provide the following details in the array format (no responsibilities or detailed explanations):
+[
+    {{
+        'Company': '',
+        'Title': '',
+        'From Date': '',
+        'To Date': '',
+        'Total Duration of Work': '',
+        'Location': '',
+        'Project': ''
+    }}
+]
     """
 
     candidate_learning = f"""
