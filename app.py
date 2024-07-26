@@ -1598,7 +1598,7 @@ def candidate_over_view():
     if not job_details:
         return jsonify({"error": "Job details not found"}), 404
 
-    # Prompts (remains the same)
+    # Prompts
     expertise_prompt = f"""
 Analyze this {pdf_text} and provide an accurate and detailed list of the candidate's areas of expertise. 
 Include specific skills, technologies, programming languages, frameworks, tools, and domains 
@@ -1620,65 +1620,61 @@ The response should be structured with categories and counts as specified.
 Output format:\n
 categories ={{
     'Candidate': ['Candidate Name'],
-    'Candidate Experience': ['Experience in years if candidate has done any internship then that period dont consider as experpence'],
+    'Candidate Experience': ['Experience in years if candidate has done any internship then that period dont consider as experience'],
     'Skills matching percentage': ['(matching skills/total skills)*100'],
     'Job Description experience': ['Experience mentioned in Job Description'], 
     'Job Description package(LPA)': ['Package Details'],
     'candidate_min_budget': ['Minimum Budget in example 8 LPA for the candidate based on experience and skills'],
     'candidate_max_budget': ['Maximum Budget in example 10 LPA for the candidate based on experience and skills']
-    
-   }}
+}}
     """
-    carrer_progress  = f"""
-        Analyze the following {pdf_text} and provide a detailed overview of the candidate's career progress. Focus on the progression of job titles, the duration of each position, key responsibilities and achievements in each role, skills acquired over time, and notable promotions. Discuss any patterns or significant milestones in the candidate's career trajectory, such as shifts in industry, increasing levels of responsibility, or specialized expertise development
- for sub_categories i only want: Company , title, from date, to date, total duration of work in years or months as per requirment, location.
 
- 
- i want everything in this format
- categories = {{
-        'sub_categories': ['Topic1', 'Topic2', 'Topic3', ...],
-        'sub_categories': ['Topic1', 'Topic2', 'Topic3', ...],
-       
-    }}
+    carrer_progress = f"""
+Analyze the following {pdf_text} and provide a detailed overview of the candidate's career progress. Focus on the progression of job titles, the duration of each position, key responsibilities and achievements in each role, skills acquired over time, and notable promotions. Discuss any patterns or significant milestones in the candidate's career trajectory, such as shifts in industry, increasing levels of responsibility, or specialized expertise development.
+For sub_categories I only want: Company, title, from date, to date, total duration of work in years or months as per requirement, location.
+
+I want everything in this format:
+categories = {{
+    'sub_categories': ['Topic1', 'Topic2', 'Topic3', ...],
+    'sub_categories': ['Topic1', 'Topic2', 'Topic3', ...],
+}}
     """
-   candidate_learning = f"""
-       Analyze {pdf_text} Please provide the technologies used and any certifications mentioned in the {pdf_text} , organized by each company he has worked for.
-       
-      *Example Arrays*:
+
+    candidate_learning = f"""
+Analyze {pdf_text}. Please provide the technologies used and any certifications mentioned in the {pdf_text}, organized by each company he has worked for.
+
+*Example Arrays*:
 - *Company Names*: ["World Pay India", "EPAM Systems India", "Global Logic", "Collabrera Technologies"]
 - *Technologies Used*: {{
     "World Pay India": ["Java", "Spring Framework", "Spring Boot", ...],
     "EPAM Systems India": ["Java", "Spring Boot", "Hibernate", ...],
     "Global Logic": ["Java", "Spring Boot", "Hibernate", ...],
     "Collabrera Technologies": ["Java", "Spring Boot", "Hibernate", ...]
-  }}
-- *Certifications*: [" "," ".......]
+}}
+- *Certifications*: [" ", " ", ...]
 - *Skills/Domain*: ["Core Java", "Spring Framework", "Spring Boot", ...]
 
-
 Please ensure each section is detailed and well-organized for clarity, with a specific focus on differentiating the technologies used by each company. Only provide the array responses without any theoretical explanations.
-"""
+    """
 
     Analyze_candidate_profile = f"""
-    Analyze the candidate profile use this {job_details} and {pdf_text}
-        This is the flow:
-        
+Analyze the candidate profile using this {job_details} and {pdf_text}.
+This is the flow:
+
 1. Extract Key Skills and Domains: Identify the primary skills and domains from the {job_details}.
- 
+
 2. Analyze Candidate's Profile: Compare the extracted skills and domains from the {job_details} with the candidate's skills and experience.
- 
+
 3. Market Trends Analysis: Evaluate the relevance of the candidate’s skills and domains against current market trends and demands.
- 
 
 4. Scoring/Ranking: Assign a relevance score to each candidate based on how well their skills and experience match the {job_details} and market trends.
 
 *Example Arrays*:
-- *Skills/Domain *: ["Core Java", "Spring Boot", "Database", ...]
-- *Candidate Experience *: ["High", "Low", "Moderate", ...]
-- *Relevance Score *: [5, 4, 2, 3, ...]
+- *Skills/Domain*: ["Core Java", "Spring Boot", "Database", ...]
+- *Candidate Experience*: ["High", "Low", "Moderate", ...]
+- *Relevance Score*: [5, 4, 2, 3, ...]
 
-*Output Format*: Provide the data as separate arrays in json format, without theoretical explanations, focusing on the scoring/ranking.
-
+*Output Format*: Provide the data as separate arrays in JSON format, without theoretical explanations, focusing on the scoring/ranking.
     """
 
     # Configure and use Generative AI
@@ -1724,6 +1720,7 @@ Please ensure each section is detailed and well-organized for clarity, with a sp
     formatted_career_progress_text = parse_career_progress(formatted_career_progress_text)
     formatted_expertise_text = parse_expertise_text(formatted_expertise_text)
     formatted_candidate_learning_text = convert_to_array(formatted_candidate_learning_text)
+
     response_data = {
         'user_id': user_id,
         'expertise_response': formatted_expertise_text,
