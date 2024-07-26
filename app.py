@@ -1603,22 +1603,9 @@ categories ={{
     }}
     """
     candidate_learning = f"""
-       Summarize and create a timeline of learning activities for the candidate based on the provided text: {pdf_text}.
-    Courses Taken: List all courses with dates (excluding formal education like B.Tech, 12th, and 10th).
-    Skills Acquired: List skills learned, organized by month and year.
-    Certifications: List certifications obtained with dates.
-    Skill/Course/Certification Count: Provide the count of skills acquired, courses taken, and certifications obtained each month or year.
-    Ensure the data is formatted for creating a line chart representing the candidate's learning progress over time.
-    Requirements:
-    Output must be in JSON format.
-    Include only the following fields in the JSON output:
-    1. Courses Taken
-    2. Skills Acquired
-    3. Certifications
-    4. Skill/Course/Certification Count
-    Print dates with year and month only.
-    The JSON output should be structured for easy visualization in a line chart.
-        
+       Analyze the provided {pdf_text} structure the candidate's educational background, work experience, certifications, courses, skills, major projects undertaken, awards and recognitions, publications and patents, professional affiliations, continuing education, and personal development. The output should be formatted as a JSON object with the following structure:"
+    mention only technical skills in the subcategory: 'Skills'.
+    i dont want any detail description about above details 
     """
 
     Analyze_candidate_profile = f"""
