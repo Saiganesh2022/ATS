@@ -1531,6 +1531,45 @@ def parse_expertise_text(text):
     return result
 
 
+def convert_to_array(candidate_learning_text):
+    # Initialize dictionaries and lists to store parsed data
+    company_names = []
+    technologies_used = {}
+    certifications = []
+    skills_domain = []
+
+    # Extract Company Names
+    company_names_match = re.search(r"Company Names:\s*\[(.*?)\]", candidate_learning_text)
+    if company_names_match:
+        company_names = [name.strip() for name in company_names_match.group(1).split(",")]
+
+    # Extract Technologies Used
+    techs_match = re.search(r"Technologies Used:\s*\{(.*?)\}", candidate_learning_text, re.DOTALL)
+    if techs_match:
+        techs_text = techs_match.group(1).strip()
+        # Use regex to handle multiple entries in the technologies section
+        techs_entries = re.findall(r'(\w.+?): \[([^\]]+)\]', techs_text)
+        for company, techs in techs_entries:
+            technologies_used[company.strip()] = [tech.strip() for tech in techs.split(",")]
+
+    # Extract Certifications
+    certs_match = re.search(r"Certifications:\s*\[(.*?)\]", candidate_learning_text)
+    if certs_match:
+        certifications = [cert.strip() for cert in certs_match.group(1).split(",") if cert.strip()]
+
+    # Extract Skills/Domain
+    skills_match = re.search(r"Skills/Domain:\s*\[(.*?)\]", candidate_learning_text)
+    if skills_match:
+        skills_domain = [skill.strip() for skill in skills_match.group(1).split(",") if skill.strip()]
+
+    return {
+        "Company Names": company_names,
+        "Technologies Used": technologies_used,
+        "Certifications": certifications,
+        "Skills/Domain": skills_domain
+    }
+
+
 @app.route('/candidate_over_view', methods=['POST'])
 def candidate_over_view():
     data = request.json
@@ -1602,11 +1641,23 @@ categories ={{
        
     }}
     """
-    candidate_learning = f"""
-       Analyze the provided {pdf_text} structure the candidate's educational background, work experience, certifications, courses, skills, major projects undertaken, awards and recognitions, publications and patents, professional affiliations, continuing education, and personal development. The output should be formatted as a JSON object with the following structure:"
-    mention only technical skills in the subcategory: 'Skills'.
-    i dont want any detail description about above details 
-    """
+   candidate_learning = f"""
+       Analyze {pdf_text} Please provide the technologies used and any certifications mentioned in the {pdf_text} , organized by each company he has worked for.
+       
+      *Example Arrays*:
+- *Company Names*: ["World Pay India", "EPAM Systems India", "Global Logic", "Collabrera Technologies"]
+- *Technologies Used*: {{
+    "World Pay India": ["Java", "Spring Framework", "Spring Boot", ...],
+    "EPAM Systems India": ["Java", "Spring Boot", "Hibernate", ...],
+    "Global Logic": ["Java", "Spring Boot", "Hibernate", ...],
+    "Collabrera Technologies": ["Java", "Spring Boot", "Hibernate", ...]
+  }}
+- *Certifications*: [" "," ".......]
+- *Skills/Domain*: ["Core Java", "Spring Framework", "Spring Boot", ...]
+
+
+Please ensure each section is detailed and well-organized for clarity, with a specific focus on differentiating the technologies used by each company. Only provide the array responses without any theoretical explanations.
+"""
 
     Analyze_candidate_profile = f"""
     Analyze the candidate profile use this {job_details} and {pdf_text}
@@ -1672,6 +1723,7 @@ categories ={{
     formatted_job_info_text = format_job_info_text(formatted_job_info_text)
     formatted_career_progress_text = parse_career_progress(formatted_career_progress_text)
     formatted_expertise_text = parse_expertise_text(formatted_expertise_text)
+    formatted_candidate_learning_text = convert_to_array(formatted_candidate_learning_text)
     response_data = {
         'user_id': user_id,
         'expertise_response': formatted_expertise_text,
