@@ -352,6 +352,8 @@ class Notification(db.Model):
 
 
 ###########################################################################################
+################## Questions Generation from Gemini ##############################
+################################################################
 def extract_text_from_pdf(pdf_bytes):
     """Extracts text from a PDF file."""
     text = ""
@@ -465,458 +467,16 @@ def generate_questions():
 
 ###############################################################################################
 
-# def extract_text_from_pdf(pdf_bytes):
-#     """Extracts text from a PDF file."""
-#     text = ""
-#     pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
-#     for page_num in range(len(pdf_document)):
-#         page = pdf_document[page_num]
-#         text += page.get_text()
-#     return text
 
-# @app.route('/generate_questions', methods=['POST'])
-# def generate_questions():
-#     data = request.json
-#     user_id = data.get('user_id')
-#     recruiter_prompt = data.get('recruiter_prompt')
-#     pdf_base64 = data.get('resume')
-
-#     if not pdf_base64:
-#         return jsonify({"error": "Resume not provided or invalid"}), 400
-
-#     try:
-#         # Decode the base64 PDF file
-#         pdf_bytes = base64.b64decode(pdf_base64)
-#     except Exception as e:
-#         return jsonify({"error": "Failed to decode base64 PDF"}), 400
-
-#     try:
-#         # Extract text from the PDF
-#         pdf_text = extract_text_from_pdf(pdf_bytes)
-#         print("pdf_text:", pdf_text)
-#     except Exception as e:
-#         return jsonify({"error": "Failed to extract text from PDF"}), 500
-
-#     # Combine the extracted text with the prompt
-#     prompt = f"{recruiter_prompt}\n\n{pdf_text}"
-
-#     # Configure and use Generative AI (assuming `genai` library setup)
-#     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
-#     if api_key is None:
-#         raise ValueError("API_KEY environment variable not set")
-
-#     genai.configure(api_key=api_key)
-#     model = genai.GenerativeModel('gemini-1.5-flash')
-
-#     try:
-#         # Use the extracted text to generate a response
-#         response = model.generate_content(prompt)
-#     except Exception as e:
-#         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
-
-#     # Ensure response content is available
-#     response_text = getattr(response, 'text', '')
-#     print("response_text:", response_text)
-#     if not response_text:
-#         return jsonify({"error": "Empty response from Generative AI"}), 500
-
-#     # Split response into lines and structure according to headings
-#     response_lines = response_text.split('\n')
-
-#     structured_response = []
-#     current_section = None
-#     questions_dict = {}
-    
-#     for line in response_lines:
-#         line = line.strip()
-#         if line.endswith(":"):
-#             # Start of a new section
-#             if current_section:
-#                 structured_response.append({
-#                     "heading": current_section.strip("##").strip(),
-#                     "questions": questions_dict
-#                 })
-#             heading = line[:-1]  # Remove the trailing colon
-#             current_section = heading
-#             questions_dict = {}
-#         elif current_section is not None and line:
-#             # Check if the line is a question or sub-heading
-#             if line.startswith("**") and line.endswith("**"):
-#                 sub_heading = line[2:-2].strip()  # Remove the leading and trailing '**'
-#                 questions_dict[sub_heading] = []
-#             elif questions_dict:
-#                 # Add questions to the last sub-heading
-#                 last_sub_heading = list(questions_dict.keys())[-1]
-#                 questions_dict[last_sub_heading].append(line.strip())
-    
-#     # Add the last section if it exists
-#     if current_section:
-#         structured_response.append({
-#             "heading": current_section.strip("##").strip(),
-#             "questions": questions_dict
-#         })
-
-#     # Prepare the response in JSON format
-#     response_data = {
-#         'user_id': user_id,
-#         'response': structured_response
-#     }
-
-#     return jsonify(response_data)
-
-
-#################################################################################################################
-# def extract_text_from_pdf(pdf_bytes):
-#     """Extracts text from a PDF file."""
-#     text = ""
-#     pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
-#     for page_num in range(len(pdf_document)):
-#         page = pdf_document[page_num]
-#         text += page.get_text()
-#     return text
-
-# @app.route('/generate_questions', methods=['POST'])
-# def generate_questions():
-#     data = request.json
-#     user_id = data.get('user_id')
-#     recruiter_prompt = data.get('recruiter_prompt')
-#     pdf_base64 = data.get('resume')
-
-#     if not pdf_base64:
-#         return jsonify({"error": "Resume not provided or invalid"}), 400
-
-#     try:
-#         # Decode the base64 PDF file
-#         pdf_bytes = base64.b64decode(pdf_base64)
-#     except Exception as e:
-#         return jsonify({"error": "Failed to decode base64 PDF"}), 400
-
-#     try:
-#         # Extract text from the PDF
-#         pdf_text = extract_text_from_pdf(pdf_bytes)
-#         print("pdf_text :",pdf_text)
-#     except Exception as e:
-#         return jsonify({"error": "Failed to extract text from PDF"}), 500
-
-#     # Combine the extracted text with the prompt
-#     prompt = f"{recruiter_prompt}\n\n{pdf_text}"
-
-#     # Configure and use Generative AI (assuming `genai` library setup)
-#     api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
-#     if api_key is None:
-#         raise ValueError("API_KEY environment variable not set")
-
-#     genai.configure(api_key=api_key)
-#     model = genai.GenerativeModel('gemini-1.5-flash')
-
-#     try:
-#         # Use the extracted text to generate a response
-#         response = model.generate_content(prompt)
-#     except Exception as e:
-#         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
-
-#     # Ensure response content is available
-#     response_text = getattr(response, 'text', '')
-#     print("response_text :",response_text)
-#     if not response_text:
-#         return jsonify({"error": "Empty response from Generative AI"}), 500
-
-#     # Split response into lines and structure according to headings
-#     response_lines = response_text.split('\n')
-
-#     structured_response = []
-
-#     current_section = None
-#     for line in response_lines:
-#         line = line.strip()
-#         if line.endswith(":"):
-#             # Start of a new section
-#             heading = line[:-1]  # Remove the trailing colon
-#             current_section = {"heading": heading, "questions": []}
-#             structured_response.append(current_section)
-#         elif current_section is not None and line:
-#             # Add questions to the current section
-#             current_section["questions"].append(line)
-
-#     # Prepare the response in JSON format
-#     response_data = {
-#         'user_id': user_id,
-#         'response': structured_response
-#     }
-
-#     return jsonify(response_data)
-
-#################################################################################################
-
-
-sub_categories = {
-    # Existing categories...
-    'Python': ['numpy', 'pandas', 'matplotlib', 'scikit-learn', 'tensorflow', 'keras'],
-    'Java': ['Spring Boot', 'J2EE', 'Hibernate', 'Servlets', 'JSP', 'Microservices'],
-    'C++': ['STL', 'OOP', 'Templates', 'Multi-threading', 'Boost'],
-    'AI': ['Machine Learning', 'Deep Learning', 'Natural Language Processing', 'Computer Vision'],
-    'JavaScript': ['React', 'Node.js', 'Angular', 'Vue.js', 'TypeScript', 'ES6'],
-    'HTML': ['HTML5', 'XML', 'JSON', 'Bootstrap'],
-    'CSS': ['CSS3', 'SASS', 'LESS'],
-    'Database Management': ['SQL', 'MySQL', 'PostgreSQL', 'MongoDB', 'Oracle'],
-    'Web Development': ['RESTful APIs', 'GraphQL', 'WebSockets', 'Django', 'Flask'],
-    'DevOps': ['Docker', 'Kubernetes', 'Jenkins', 'Ansible', 'Terraform'],
-    'Cloud Computing': ['AWS', 'Azure', 'Google Cloud', 'Firebase'],
-    'Mobile Development': ['iOS Development', 'Android Development', 'React Native', 'Flutter'],
-    'Testing': ['Unit Testing', 'Integration Testing', 'Selenium', 'JUnit', 'Cypress'],
-    'Version Control': ['Git', 'SVN', 'Mercurial'],
-    'Agile Methodology': ['Scrum', 'Kanban', 'Agile Project Management'],
-    'Big Data': ['Hadoop', 'Spark', 'Hive', 'MapReduce', 'BigQuery'],
-    'Security': ['SSL/TLS', 'OWASP Top 10', 'Encryption', 'Firewalls', 'Penetration Testing'],
-    'UI/UX Design': ['Adobe XD', 'Sketch', 'Figma', 'User Interface Design', 'User Experience Design'],
-    'PHP': ['Laravel', 'Symfony', 'CodeIgniter', 'WordPress', 'Magento'],
-    'Ruby': ['Ruby on Rails', 'Sinatra', 'Rack', 'RSpec', 'Cucumber'],
-    'Go': ['Goroutines', 'Channels', 'RESTful APIs', 'Concurrency', 'Google App Engine'],
-    'Swift': ['iOS SDK', 'Cocoa Touch', 'SwiftUI', 'Combine', 'Realm'],
-    'Kotlin': ['Android SDK', 'Coroutines', 'Jetpack', 'Room', 'Ktor'],
-    'R': ['Data Visualization', 'Data Manipulation', 'Statistical Analysis', 'Shiny', 'ggplot2'],
-    'Perl': ['CGI', 'Mojolicious', 'DBI', 'Moose', 'Dancer'],
-    'Scala': ['Akka', 'Play Framework', 'Spark Streaming', 'Slick', 'ScalaTest'],
-    'TypeScript': ['Angular', 'React', 'Vue.js', 'Node.js', 'TypeORM'],
-    'Lua': ['Corona SDK', 'LÖVE', 'LuaJIT', 'Torch', 'MoonScript'],
-    'Shell Scripting': ['Bash', 'Shell Commands', 'Shell Variables', 'Script Automation', 'SED and AWK'],
-    'Assembly Language': ['x86 Assembly', 'ARM Assembly', 'MIPS Assembly', 'NASM', 'Keil'],
-    'MATLAB': ['Simulink', 'Image Processing Toolbox', 'Signal Processing Toolbox', 'Machine Learning Toolbox', 'Deep Learning Toolbox'],
-    'VB.NET': ['ASP.NET', 'Windows Forms', 'LINQ', 'ADO.NET', 'Entity Framework'],
-    'C#': ['.NET Framework', '.NET Core', 'ASP.NET Core', 'Unity', 'LINQ'],
-    'Dart': ['Flutter', 'Dart VM', 'AngularDart', 'Aqueduct', 'DartPad'],
-    'Julia': ['DataFrames', 'Plots', 'JuMP', 'Parallel Computing', 'Metaprogramming'],
-    'Haskell': ['GHC', 'Functional Programming', 'Monads', 'QuickCheck', 'Parsec'],
-    'Groovy': ['Grails', 'Spock Framework', 'Gradle', 'Geb', 'Ratpack'],
-    'Elixir': ['Phoenix Framework', 'Ecto', 'OTP', 'GenServer', 'Mix'],
-    'F#': ['.NET Framework', 'Fable', 'Functional Programming', 'Type Providers', 'Fable'],
-    'Rust': ['Ownership', 'Borrowing', 'Concurrency', 'Actix', 'Rocket'],
-    'Objective-C': ['Cocoa Touch', 'iOS Development', 'Swift', 'Core Data', 'UIKit'],
-    'COBOL': ['Mainframe', 'JCL', 'CICS', 'DB2', 'COBOL-IT'],
-    'Fortran': ['Numerical Computing', 'Parallel Programming', 'DO loops', 'Array Operations', 'GFortran'],
-    'Ada': ['Concurrency', 'Safety-Critical Systems', 'GNAT', 'SPARK', 'Real-Time Systems'],
-    'Scheme': ['Functional Programming', 'LISP', 'MIT/GNU Scheme', 'Racket', 'Guile'],
-    'Prolog': ['Logic Programming', 'Datalog', 'SWI-Prolog', 'GNU Prolog', 'CLP(FD)'],
-    'LISP': ['Common Lisp', 'Clojure', 'Scheme', 'Emacs Lisp', 'Racket'],
-    'Smalltalk': ['Object-Oriented Programming', 'Squeak', 'Pharo', 'Seaside', 'Morphic'],
-    'Erlang': ['OTP', 'Concurrency', 'Distributed Systems', 'Elixir', 'Riak'],
-    'D': ['Systems Programming', 'Garbage Collection', 'DUB', 'Vibe.d', 'GTKD'],
-    'PowerShell': ['Windows Administration', 'Scripting', 'Azure PowerShell', 'PowerShell Core', 'Active Directory'],
-    'Clojure': ['Functional Programming', 'Concurrency', 'LISP', 'ClojureScript', 'Datomic'],
-    'VHDL': ['FPGA', 'Digital Design', 'RTL Design', 'ModelSim', 'Vivado'],
-    'Verilog': ['ASIC', 'FPGA', 'SystemVerilog', 'Simulation', 'Synthesis'],
-
-    # Additional categories...
-    'Ruby on Rails': ['ActiveRecord', 'ActionView', 'ActionMailer', 'RSpec', 'Capistrano'],
-    'AngularJS': ['Controllers', 'Directives', 'Services', 'Filters', 'Routing'],
-    'Ember.js': ['Ember Data', 'Templates', 'Components', 'Controllers', 'Routing'],
-    'Backbone.js': ['Models', 'Views', 'Collections', 'Routers', 'Underscore.js'],
-    'Meteor.js': ['Meteor Methods', 'Blaze', 'Tracker', 'Accounts', 'Reactivity'],
-    'Polymer': ['Custom Elements', 'Templates', 'Data Binding', 'Events', 'Shadow DOM'],
-    'Golang': ['Concurrency', 'Channels', 'Interfaces', 'Benchmarking', 'WebAssembly'],
-    'Lua': ['Coroutines', 'Metatables', 'LuaSocket', 'Lapis', 'MoonScript'],
-    'Django': ['Models', 'Views', 'Forms', 'Templates', 'Admin'],
-    'Flask': ['Routes', 'Templates', 'Blueprints', 'SQLAlchemy', 'RESTful APIs'],
-    'Vue.js': ['Components', 'Directives', 'Vue Router', 'Vuex', 'Vue CLI'],
-    'Spring Framework': ['Dependency Injection', 'Spring MVC', 'Spring Security', 'Spring Data', 'Spring Boot'],
-    'Hibernate': ['Mapping', 'Transactions', 'Caching', 'Query Language', 'Entity Manager'],
-    'Node.js': ['Express.js', 'NPM', 'Event-driven Programming', 'RESTful APIs', 'Socket.io'],
-    'React Native': ['Components', 'Navigation', 'State Management', 'Hooks', 'Redux'],
-    'Flutter': ['Widgets', 'State Management', 'Material Design', 'Firebase Integration', 'Plugins'],
-    'ASP.NET': ['MVC', 'Web Forms', 'Entity Framework', 'Identity', 'Core'],
-    'Symfony': ['Bundles', 'Doctrine', 'Twig', 'Console', 'Security'],
-    'Laravel': ['Eloquent ORM', 'Blade Templates', 'Migrations', 'Events', 'Queues'],
-    'CodeIgniter': ['Controllers', 'Models', 'Views', 'Helpers', 'Form Validation'],
-    'Yii': ['Models', 'Controllers', 'Views', 'Widgets', 'Gii'],
-    'MVC Frameworks': ['Model', 'View', 'Controller', 'Routing', 'Templating'],
-    'Serverless Architecture': ['AWS Lambda', 'Azure Functions', 'Google Cloud Functions', 'Event-driven', 'NoOps'],
-    'Microservices Architecture': ['Service Discovery', 'API Gateway', 'Circuit Breaker', 'Event Sourcing', 'Service Mesh'],
-    'GraphQL': ['Schemas', 'Resolvers', 'Mutations', 'Subscriptions', 'Apollo Client'],
-    'RESTful APIs': ['HTTP Methods', 'Authentication', 'JSON', 'OpenAPI', 'Swagger'],
-    'SOAP': ['WSDL', 'UDDI', 'XML', 'WS-Security', 'Web Services'],
-    'Blockchain Development': ['Smart Contracts', 'Decentralized Apps', 'Consensus Algorithms', 'Cryptocurrencies', 'Hyperledger'],
-    'AR/VR Development': ['Unity3D', 'Unreal Engine', 'ARKit', 'ARCore', 'Vuforia'],
-    'Quantum Computing': ['Qubits', 'Quantum Gates', 'Quantum Algorithms', 'Quantum Teleportation', 'Superposition'],
-    'Low-Code Development': ['Visual Programming', 'Drag-and-drop', 'Workflow Automation', 'App Deployment', 'No-code Platforms'],
-    'PWA': ['Service Workers', 'App Shell', 'Push Notifications', 'Offline Support', 'Add to Home Screen'],
-    'NoSQL Databases': ['Document Store', 'Key-Value Store', 'Column-Family Store', 'Graph Store', 'Time Series Store'],
-    'Blockchain': ['Decentralized Ledger', 'Mining', 'Cryptocurrency', 'Smart Contracts', 'Distributed Consensus'],
-    'RPA (Robotic Process Automation)': ['Automation Anywhere', 'UiPath', 'Blue Prism', 'Process Mining', 'RPA Bots'],
-    'Cybersecurity': ['Ethical Hacking', 'Network Security', 'Cryptography', 'Incident Response', 'Security Operations'],
-    'Artificial Intelligence': ['Machine Learning', 'Neural Networks', 'Computer Vision', 'Natural Language Processing', 'AI Ethics'],
-    '5G Networks': ['Network Slicing', 'Edge Computing', 'Millimeter Wave', 'Virtual RAN', 'Beamforming'],
-    'Edge Computing': ['Fog Computing', 'Cloudlet', 'Mobile Edge Computing', 'Edge Analytics', 'Edge Security'],
-    'Quantum Cryptography': ['Quantum Key Distribution', 'Quantum Networks', 'Post-Quantum Cryptography', 'Quantum Hacking', 'Quantum Encryption'],
-    'Augmented Reality': ['Marker-based AR', 'Markerless AR', 'SLAM', 'AR Cloud', 'AR Glasses'],
-    'Virtual Reality': ['Immersive VR', '360-degree Video', 'VR Gaming', 'VR Training', 'VR Therapy'],
-    'Ethical Hacking': ['Footprinting', 'Scanning', 'Enumeration', 'Sniffing', 'Social Engineering'],
-    'Penetration Testing': ['Black Box Testing', 'White Box Testing', 'Gray Box Testing', 'Vulnerability Assessment', 'Exploitation'],
-    'Incident Response': ['Threat Detection', 'Forensics Analysis', 'Incident Containment', 'Root Cause Analysis', 'Remediation'],
-    'IoT Security': ['Device Authentication', 'Data Encryption', 'Firmware Updates', 'Access Control', 'Privacy Protection'],
-    'Cloud Security': ['Identity and Access Management', 'Data Encryption', 'Security Compliance', 'Threat Intelligence', 'Security Orchestration'],
-    'Mobile Security': ['App Hardening', 'Secure APIs', 'Jailbreaking Detection', 'Rooting Detection', 'Code Obfuscation'],
-    'AI Ethics': ['Fairness', 'Accountability', 'Transparency', 'Privacy', 'Bias'],
-    'Data Science': ['Statistical Analysis', 'Data Mining', 'Predictive Modeling', 'Data Visualization', 'Big Data'],
-    'Bioinformatics': ['Genomics', 'Proteomics', 'Computational Biology', 'Biostatistics', 'Bioinformatics Tools'],
-    'Health Informatics': ['Electronic Health Records', 'Health Data Analytics', 'Medical Imaging', 'Clinical Decision Support', 'Telemedicine'],
-    'Geographic Information Systems (GIS)': ['Spatial Analysis', 'Remote Sensing', 'GIS Software', 'Cartography', 'Geocoding'],
-    'Business Intelligence (BI)': ['Data Warehousing', 'Data Integration', 'OLAP', 'ETL Processes', 'Data Mining'],
-    'Financial Technology (FinTech)': ['Payments', 'Blockchain', 'Robo-advisors', 'InsurTech', 'RegTech'],
-    'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
-    'EdTech': ['Learning Management Systems', 'Online Education', 'eLearning Platforms', 'Educational Technology Tools', 'MOOCs'],
-    'GovTech': ['Digital Transformation', 'Smart Cities', 'Civic Tech', 'Open Data', 'Government Analytics'],
-    'AgTech': ['Precision Agriculture', 'Farm Management Software', 'AgriTech Startups', 'Vertical Farming', 'AgriTech Solutions'],
-    'Space Tech': ['Satellite Technology', 'Space Exploration', 'Rocket Science', 'Spacecraft Design', 'Astronautics'],
-    'Green Tech': ['Renewable Energy', 'Sustainability', 'Environmental Monitoring', 'CleanTech', 'Green Building'],
-    'MarTech': ['Marketing Automation', 'Digital Marketing Analytics', 'Customer Relationship Management (CRM)', 'Content Management Systems', 'SEO'],
-    'InsurTech': ['Digital Insurance Platforms', 'Claims Processing Automation', 'Underwriting Automation', 'Insurance Analytics', 'InsurTech Startups'],
-    'Retail Tech': ['E-commerce Platforms', 'Point-of-Sale Systems', 'Supply Chain Management', 'Retail Analytics', 'Omni-channel Retailing'],
-    'HR Tech': ['Human Resource Information Systems (HRIS)', 'Talent Acquisition Software', 'Employee Engagement Platforms', 'Performance Management Systems', 'HR Analytics'],
-    'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
-    'AdTech': ['Programmatic Advertising', 'Ad Exchange Platforms', 'Ad Fraud Detection', 'Ad Targeting', 'Data Management Platforms'],
-    'Logistics Tech': ['Supply Chain Optimization', 'Fleet Management Systems', 'Last-Mile Delivery Solutions', 'Warehouse Management Systems', 'Freight Forwarding Software'],
-    'Food Tech': ['Food Delivery Platforms', 'Restaurant Management Software', 'Food Safety Technology', 'AgriTech Solutions', 'Food Analytics'],
-    'Sports Tech': ['Sports Analytics', 'Fitness Tracking Apps', 'Athlete Performance Management', 'Sports Biomechanics', 'eSports Platforms'],
-    'Travel Tech': ['Online Travel Agencies', 'Travel Management Software', 'Booking Platforms', 'Travel Expense Management', 'Hospitality Tech'],
-    'Telecom Tech': ['5G Networks', 'Fiber Optics', 'Mobile Infrastructure', 'Telecom Software', 'Network Security'],
-    'Entertainment Tech': ['Streaming Platforms', 'Gaming Consoles', 'Music Streaming Services', 'Video Production Tools', 'Virtual Reality (VR)'],
-    'Media Tech': ['Digital Publishing Platforms', 'Content Management Systems', 'Media Analytics', 'Broadcasting Technology', 'Media Distribution'],
-    'Fashion Tech': ['Virtual Try-On', 'Fashion E-commerce Platforms', 'AR Fashion Apps', 'Fashion Data Analytics', 'Sustainable Fashion Tech'],
-    'Real Estate Tech': ['Property Management Software', 'Real Estate Marketplaces', 'VR Property Tours', 'Real Estate CRM', 'Automated Valuation Models'],
-    'Health Tech': ['Telemedicine Platforms', 'Health Data Analytics', 'Medical Imaging AI', 'Patient Management Software', 'Health Wearables'],
-    'Construction Tech': ['Building Information Modeling (BIM)', 'Construction Management Software', 'Drones in Construction', 'IoT in Construction', 'Prefabrication Technology'],
-    'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
-    'Energy Tech': ['Smart Grids', 'Renewable Energy Technology', 'Energy Storage Solutions', 'Energy Management Systems', 'Microgrid Technology'],
-    'Agritech': ['Precision Agriculture', 'Farm Management Software', 'AgriTech Startups', 'Vertical Farming', 'AgriTech Solutions'],
-    'Govtech': ['Digital Transformation', 'Smart Cities', 'Civic Tech', 'Open Data', 'Government Analytics'],
-    'Retail Tech': ['E-commerce Platforms', 'Point-of-Sale Systems', 'Supply Chain Management', 'Retail Analytics', 'Omni-channel Retailing'],
-    'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
-    'Travel Tech': ['Online Travel Agencies', 'Travel Management Software', 'Booking Platforms', 'Travel Expense Management', 'Hospitality Tech'],
-    'Telecom Tech': ['5G Networks', 'Fiber Optics', 'Mobile Infrastructure', 'Telecom Software', 'Network Security'],
-    'EdTech': ['Learning Management Systems', 'Online Education', 'eLearning Platforms', 'Educational Technology Tools', 'MOOCs'],
-    'Construction Tech': ['Building Information Modeling (BIM)', 'Construction Management Software', 'Drones in Construction', 'IoT in Construction', 'Prefabrication Technology'],
-    'Health Tech': ['Telemedicine Platforms', 'Health Data Analytics', 'Medical Imaging AI', 'Patient Management Software', 'Health Wearables'],
-    'FinTech': ['Payments', 'Blockchain', 'Robo-advisors', 'InsurTech', 'RegTech'],
-    'Fashion Tech': ['Virtual Try-On', 'Fashion E-commerce Platforms', 'AR Fashion Apps', 'Fashion Data Analytics', 'Sustainable Fashion Tech'],
-    'Energy Tech': ['Smart Grids', 'Renewable Energy Technology', 'Energy Storage Solutions', 'Energy Management Systems', 'Microgrid Technology'],
-    'Media Tech': ['Digital Publishing Platforms', 'Content Management Systems', 'Media Analytics', 'Broadcasting Technology', 'Media Distribution'],
-    'Food Tech': ['Food Delivery Platforms', 'Restaurant Management Software', 'Food Safety Technology', 'AgriTech Solutions', 'Food Analytics'],
-    'Automotive Tech': ['Autonomous Vehicles', 'Connected Cars', 'Electric Vehicle Technology', 'Vehicle Telematics', 'Automotive Cybersecurity'],
-    'Blockchain': ['Decentralized Ledger', 'Mining', 'Cryptocurrency', 'Smart Contracts', 'Distributed Consensus'],
-    'Cybersecurity': ['Ethical Hacking', 'Network Security', 'Cryptography', 'Incident Response', 'Security Operations'],
-    '5G Networks': ['Network Slicing', 'Edge Computing', 'Millimeter Wave', 'Virtual RAN', 'Beamforming'],
-    'Edge Computing': ['Fog Computing', 'Cloudlet', 'Mobile Edge Computing', 'Edge Analytics', 'Edge Security'],
-    'Quantum Cryptography': ['Quantum Key Distribution', 'Quantum Networks', 'Post-Quantum Cryptography', 'Quantum Hacking', 'Quantum Encryption'],
-    'Augmented Reality': ['Marker-based AR', 'Markerless AR', 'SLAM', 'AR Cloud', 'AR Glasses'],
-    'Virtual Reality': ['Immersive VR', '360-degree Video', 'VR Gaming', 'VR Training', 'VR Therapy'],
-    'Ethical Hacking': ['Footprinting', 'Scanning', 'Enumeration', 'Sniffing', 'Social Engineering'],
-    'Penetration Testing': ['Black Box Testing', 'White Box Testing', 'Gray Box Testing', 'Vulnerability Assessment', 'Exploitation'],
-    'Incident Response': ['Threat Detection', 'Forensics Analysis', 'Incident Containment', 'Root Cause Analysis', 'Remediation'],
-    'IoT Security': ['Device Authentication', 'Data Encryption', 'Firmware Updates', 'Access Control', 'Privacy Protection'],
-    'Cloud Security': ['Identity and Access Management', 'Data Encryption', 'Security Compliance', 'Threat Intelligence', 'Security Orchestration'],
-    'Mobile Security': ['App Hardening', 'Secure APIs', 'Jailbreaking Detection', 'Rooting Detection', 'Code Obfuscation'],
-    'AI Ethics': ['Fairness', 'Accountability', 'Transparency', 'Privacy', 'Bias'],
-    'Data Science': ['Statistical Analysis', 'Data Mining', 'Predictive Modeling', 'Data Visualization', 'Big Data'],
-    'Bioinformatics': ['Genomics', 'Proteomics', 'Computational Biology', 'Biostatistics', 'Bioinformatics Tools'],
-    'Health Informatics': ['Electronic Health Records', 'Health Data Analytics', 'Medical Imaging', 'Clinical Decision Support', 'Telemedicine'],
-    'Geographic Information Systems (GIS)': ['Spatial Analysis', 'Remote Sensing', 'GIS Software', 'Cartography', 'Geocoding'],
-    'Business Intelligence (BI)': ['Data Warehousing', 'Data Integration', 'OLAP', 'ETL Processes', 'Data Mining'],
-    'Financial Technology (FinTech)': ['Payments', 'Blockchain', 'Robo-advisors', 'InsurTech', 'RegTech'],
-    'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
-    'EdTech': ['Learning Management Systems', 'Online Education', 'eLearning Platforms', 'Educational Technology Tools', 'MOOCs'],
-    'GovTech': ['Digital Transformation', 'Smart Cities', 'Civic Tech', 'Open Data', 'Government Analytics'],
-    'AgTech': ['Precision Agriculture', 'Farm Management Software', 'AgriTech Startups', 'Vertical Farming', 'AgriTech Solutions'],
-    'Space Tech': ['Satellite Technology', 'Space Exploration', 'Rocket Science', 'Spacecraft Design', 'Astronautics'],
-    'Green Tech': ['Renewable Energy', 'Sustainability', 'Environmental Monitoring', 'CleanTech', 'Green Building'],
-    'MarTech': ['Marketing Automation', 'Digital Marketing Analytics', 'Customer Relationship Management (CRM)', 'Content Management Systems', 'SEO'],
-    'InsurTech': ['Digital Insurance Platforms', 'Claims Processing Automation', 'Underwriting Automation', 'Insurance Analytics', 'InsurTech Startups'],
-    'Retail Tech': ['E-commerce Platforms', 'Point-of-Sale Systems', 'Supply Chain Management', 'Retail Analytics', 'Omni-channel Retailing'],
-    'HR Tech': ['Human Resource Information Systems (HRIS)', 'Talent Acquisition Software', 'Employee Engagement Platforms', 'Performance Management Systems', 'HR Analytics'],
-    'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
-    'AdTech': ['Programmatic Advertising', 'Ad Exchange Platforms', 'Ad Fraud Detection', 'Ad Targeting', 'Data Management Platforms'],
-    'Logistics Tech': ['Supply Chain Optimization', 'Fleet Management Systems', 'Last-Mile Delivery Solutions', 'Warehouse Management Systems', 'Freight Forwarding Software'],
-    'Food Tech': ['Food Delivery Platforms', 'Restaurant Management Software', 'Food Safety Technology', 'AgriTech Solutions', 'Food Analytics'],
-    'Sports Tech': ['Sports Analytics', 'Fitness Tracking Apps', 'Athlete Performance Management', 'Sports Biomechanics', 'eSports Platforms'],
-    'Travel Tech': ['Online Travel Agencies', 'Travel Management Software', 'Booking Platforms', 'Travel Expense Management', 'Hospitality Tech'],
-    'Telecom Tech': ['5G Networks', 'Fiber Optics', 'Mobile Infrastructure', 'Telecom Software', 'Network Security'],
-    'Entertainment Tech': ['Streaming Platforms', 'Gaming Consoles', 'Music Streaming Services', 'Video Production Tools', 'Virtual Reality (VR)'],
-    'Media Tech': ['Digital Publishing Platforms', 'Content Management Systems', 'Media Analytics', 'Broadcasting Technology', 'Media Distribution'],
-    'Fashion Tech': ['Virtual Try-On', 'Fashion E-commerce Platforms', 'AR Fashion Apps', 'Fashion Data Analytics', 'Sustainable Fashion Tech'],
-    'Real Estate Tech': ['Property Management Software', 'Real Estate Marketplaces', 'VR Property Tours', 'Real Estate CRM', 'Automated Valuation Models'],
-    'Health Tech': ['Telemedicine Platforms', 'Health Data Analytics', 'Medical Imaging AI', 'Patient Management Software', 'Health Wearables'],
-    'Construction Tech': ['Building Information Modeling (BIM)', 'Construction Management Software', 'Drones in Construction', 'IoT in Construction', 'Prefabrication Technology'],
-    'Energy Tech': ['Smart Grids', 'Renewable Energy Technology', 'Energy Storage Solutions', 'Energy Management Systems', 'Microgrid Technology'],
-    'Agritech': ['Precision Agriculture', 'Farm Management Software', 'AgriTech Startups', 'Vertical Farming', 'AgriTech Solutions'],
-    'Govtech': ['Digital Transformation', 'Smart Cities', 'Civic Tech', 'Open Data', 'Government Analytics'],
-    'Retail Tech': ['E-commerce Platforms', 'Point-of-Sale Systems', 'Supply Chain Management', 'Retail Analytics', 'Omni-channel Retailing'],
-    'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
-    'Travel Tech': ['Online Travel Agencies', 'Travel Management Software', 'Booking Platforms', 'Travel Expense Management', 'Hospitality Tech'],
-    'Telecom Tech': ['5G Networks', 'Fiber Optics', 'Mobile Infrastructure', 'Telecom Software', 'Network Security'],
-    'EdTech': ['Learning Management Systems', 'Online Education', 'eLearning Platforms', 'Educational Technology Tools', 'MOOCs'],
-    'Construction Tech': ['Building Information Modeling (BIM)', 'Construction Management Software', 'Drones in Construction', 'IoT in Construction', 'Prefabrication Technology'],
-    'Health Tech': ['Telemedicine Platforms', 'Health Data Analytics', 'Medical Imaging AI', 'Patient Management Software', 'Health Wearables'],
-    'FinTech': ['Payments', 'Blockchain', 'Robo-advisors', 'InsurTech', 'RegTech'],
-    'Fashion Tech': ['Virtual Try-On', 'Fashion E-commerce Platforms', 'AR Fashion Apps', 'Fashion Data Analytics', 'Sustainable Fashion Tech'],
-    'Energy Tech': ['Smart Grids', 'Renewable Energy Technology', 'Energy Storage Solutions', 'Energy Management Systems', 'Microgrid Technology'],
-    'Media Tech': ['Digital Publishing Platforms', 'Content Management Systems', 'Media Analytics', 'Broadcasting Technology', 'Media Distribution'],
-    'Food Tech': ['Food Delivery Platforms', 'Restaurant Management Software', 'Food Safety Technology', 'AgriTech Solutions', 'Food Analytics'],
-    'Automotive Tech': ['Autonomous Vehicles', 'Connected Cars', 'Electric Vehicle Technology', 'Vehicle Telematics', 'Automotive Cybersecurity'],
-    'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
-    'Blockchain': ['Decentralized Ledger', 'Mining', 'Cryptocurrency', 'Smart Contracts', 'Distributed Consensus'],
-    'Cybersecurity': ['Ethical Hacking', 'Network Security', 'Cryptography', 'Incident Response', 'Security Operations'],
-    '5G Networks': ['Network Slicing', 'Edge Computing', 'Millimeter Wave', 'Virtual RAN', 'Beamforming'],
-    'Edge Computing': ['Fog Computing', 'Cloudlet', 'Mobile Edge Computing', 'Edge Analytics', 'Edge Security'],
-    'Quantum Cryptography': ['Quantum Key Distribution', 'Quantum Networks', 'Post-Quantum Cryptography', 'Quantum Hacking', 'Quantum Encryption'],
-    'Augmented Reality': ['Marker-based AR', 'Markerless AR', 'SLAM', 'AR Cloud', 'AR Glasses'],
-    'Virtual Reality': ['Immersive VR', '360-degree Video', 'VR Gaming', 'VR Training', 'VR Therapy'],
-    'Ethical Hacking': ['Footprinting', 'Scanning', 'Enumeration', 'Sniffing', 'Social Engineering'],
-    'Penetration Testing': ['Black Box Testing', 'White Box Testing', 'Gray Box Testing', 'Vulnerability Assessment', 'Exploitation'],
-    'Incident Response': ['Threat Detection', 'Forensics Analysis', 'Incident Containment', 'Root Cause Analysis', 'Remediation'],
-    'IoT Security': ['Device Authentication', 'Data Encryption', 'Firmware Updates', 'Access Control', 'Privacy Protection'],
-    'Cloud Security': ['Identity and Access Management', 'Data Encryption', 'Security Compliance', 'Threat Intelligence', 'Security Orchestration'],
-    'Mobile Security': ['App Hardening', 'Secure APIs', 'Jailbreaking Detection', 'Rooting Detection', 'Code Obfuscation'],
-    'AI Ethics': ['Fairness', 'Accountability', 'Transparency', 'Privacy', 'Bias'],
-    'Data Science': ['Statistical Analysis', 'Data Mining', 'Predictive Modeling', 'Data Visualization', 'Big Data'],
-    'Bioinformatics': ['Genomics', 'Proteomics', 'Computational Biology', 'Biostatistics', 'Bioinformatics Tools'],
-    'Health Informatics': ['Electronic Health Records', 'Health Data Analytics', 'Medical Imaging', 'Clinical Decision Support', 'Telemedicine'],
-    'Geographic Information Systems (GIS)': ['Spatial Analysis', 'Remote Sensing', 'GIS Software', 'Cartography', 'Geocoding'],
-    'Business Intelligence (BI)': ['Data Warehousing', 'Data Integration', 'OLAP', 'ETL Processes', 'Data Mining'],
-    'Financial Technology (FinTech)': ['Payments', 'Blockchain', 'Robo-advisors', 'InsurTech', 'RegTech'],
-    'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
-    'EdTech': ['Learning Management Systems', 'Online Education', 'eLearning Platforms', 'Educational Technology Tools', 'MOOCs'],
-    'GovTech': ['Digital Transformation', 'Smart Cities', 'Civic Tech', 'Open Data', 'Government Analytics'],
-    'AgTech': ['Precision Agriculture', 'Farm Management Software', 'AgriTech Startups', 'Vertical Farming', 'AgriTech Solutions'],
-    'Space Tech': ['Satellite Technology', 'Space Exploration', 'Rocket Science', 'Spacecraft Design', 'Astronautics'],
-    'Green Tech': ['Renewable Energy', 'Sustainability', 'Environmental Monitoring', 'CleanTech', 'Green Building'],
-    'MarTech': ['Marketing Automation', 'Digital Marketing Analytics', 'Customer Relationship Management (CRM)', 'Content Management Systems', 'SEO'],
-    'InsurTech': ['Digital Insurance Platforms', 'Claims Processing Automation', 'Underwriting Automation', 'Insurance Analytics', 'InsurTech Startups'],
-    'Retail Tech': ['E-commerce Platforms', 'Point-of-Sale Systems', 'Supply Chain Management', 'Retail Analytics', 'Omni-channel Retailing'],
-    'HR Tech': ['Human Resource Information Systems (HRIS)', 'Talent Acquisition Software', 'Employee Engagement Platforms', 'Performance Management Systems', 'HR Analytics'],
-    'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
-    'AdTech': ['Programmatic Advertising', 'Ad Exchange Platforms', 'Ad Fraud Detection', 'Ad Targeting', 'Data Management Platforms'],
-    'Logistics Tech': ['Supply Chain Optimization', 'Fleet Management Systems', 'Last-Mile Delivery Solutions', 'Warehouse Management Systems', 'Freight Forwarding Software'],
-    'Food Tech': ['Food Delivery Platforms', 'Restaurant Management Software', 'Food Safety Technology', 'AgriTech Solutions', 'Food Analytics'],
-    'Sports Tech': ['Sports Analytics', 'Fitness Tracking Apps', 'Athlete Performance Management', 'Sports Biomechanics', 'eSports Platforms'],
-    'Travel Tech': ['Online Travel Agencies', 'Travel Management Software', 'Booking Platforms', 'Travel Expense Management', 'Hospitality Tech'],
-    'Telecom Tech': ['5G Networks', 'Fiber Optics', 'Mobile Infrastructure', 'Telecom Software', 'Network Security'],
-    'Entertainment Tech': ['Streaming Platforms', 'Gaming Consoles', 'Music Streaming Services', 'Video Production Tools', 'Virtual Reality (VR)'],
-    'Media Tech': ['Digital Publishing Platforms', 'Content Management Systems', 'Media Analytics', 'Broadcasting Technology', 'Media Distribution'],
-    'Fashion Tech': ['Virtual Try-On', 'Fashion E-commerce Platforms', 'AR Fashion Apps', 'Fashion Data Analytics', 'Sustainable Fashion Tech'],
-    'Real Estate Tech': ['Property Management Software', 'Real Estate Marketplaces', 'VR Property Tours', 'Real Estate CRM', 'Automated Valuation Models'],
-    'Health Tech': ['Telemedicine Platforms', 'Health Data Analytics', 'Medical Imaging AI', 'Patient Management Software', 'Health Wearables'],
-    'Construction Tech': ['Building Information Modeling (BIM)', 'Construction Management Software', 'Drones in Construction', 'IoT in Construction', 'Prefabrication Technology'],
-    'Energy Tech': ['Smart Grids', 'Renewable Energy Technology', 'Energy Storage Solutions', 'Energy Management Systems', 'Microgrid Technology']}
-
-
-
-
+# Extract text from PDF
 def extract_text_from_pdf(file_binary):
     text = ''
-    pdf_reader = PyPDF2.PdfFileReader(BytesIO(file_binary))
+    pdf_reader = PdfFileReader(BytesIO(file_binary))
     for page_num in range(pdf_reader.numPages):
         text += pdf_reader.getPage(page_num).extract_text()
     return text
 
+# Extract text from DOCX
 def extract_text_from_docx(file_binary):
     doc = docx.Document(BytesIO(file_binary))
     text = ''
@@ -924,12 +484,13 @@ def extract_text_from_docx(file_binary):
         text += para.text
     return text
 
-
+# Extract phone number
 def extract_phone_number(text):
     phone_regex = r'[\+\(]?[1-9][0-9 .\-\(\)]{8,}[0-9]'
     phone_matches = re.findall(phone_regex, text)
     return phone_matches[-1].strip() if phone_matches else "No phone number found"
 
+# Extract name
 def extract_name(text):
     lines = text.split('\n')
     name_words = []
@@ -947,281 +508,241 @@ def extract_name(text):
 
     return "No name found"
 
+# Extract email
 def extract_email(text):
     email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
     email_matches = re.findall(email_regex, text)
     return email_matches[-1].rstrip('.,') if email_matches else "No email found"
 
-
-# New functions for extracting candidate details
-# def extract_phone_number(text):
-#     phone_regex = r'\b\d{10}\b'
-#     phone_matches = re.findall(phone_regex, text)
-#     return phone_matches[-1] if phone_matches else "No phone number found"
-
-# def extract_name(text):
-#     lines = text.split('\n')
-#     name_words = []  # List to store the words of the name
-    
-#     # Regular expressions to identify lines that are likely contact details
-#     phone_pattern = re.compile(r'\b(\+?\d[\d\-\.\s]+)?\d{10}\b')
-#     email_pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
-    
-#     for line in lines[:5]:  # Look at the first five lines where the name is likely to appear
-#         # Skip lines that are likely to be contact details
-#         if phone_pattern.search(line) or email_pattern.search(line):
-#             continue
-        
-#         # Remove common salutations and titles
-#         cleaned_line = re.sub(r'\b(Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam)\b', '', line, flags=re.IGNORECASE).strip()
-        
-#         # Extract names with up to three words
-#         words = cleaned_line.split()
-#         name_words.extend(words)  # Add words from the current line to the list
-        
-#         if len(name_words) <= 2:
-#             continue  # Continue accumulating words if we have less than or equal to three words
-#         else:
-#             # Stop accumulating if we exceed three words and return the concatenated name
-#             return ' '.join(word.capitalize() for word in name_words[:3]).rstrip('.,')
-    
-#     # Return the concatenated name if found within the first five lines
-#     if name_words:
-#         return ' '.join(word.capitalize() for word in name_words[:3]).rstrip('.,')
-    
-#     return "No name found"
-
-# def extract_email(text):
-#     email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-#     email_matches = re.findall(email_regex, text)
-#     return email_matches[-1].rstrip('.,') if email_matches else "No email found"
-
-
-def extract_text_from_docx1(file_binary):
-    """
-    Extract text from a DOCX file.
-    
-    Parameters:
-        file (BytesIO): DOCX file-like object.
-    
-    Returns:
-        str: Extracted text.
-    """
-    text = ""
-    try:
-        doc = Document(file)
-        for paragraph in doc.paragraphs:
-            text += paragraph.text + '\n'
-    except Exception as e:
-        print(f"Error extracting text from DOCX: {e}")
-    return text
-
+# Extract text from resume
 def extract_text_from_resume(file_binary):
     try:
         return extract_text_from_pdf(file_binary)
-    except PyPDF2.utils.PdfReadError:
+    except:
         pass
-    
     try:
         return extract_text_from_docx(file_binary)
     except Exception:
         raise ValueError("Unsupported file format")
 
-def preprocess_text(text):
-    text = re.sub(r'\W+', ' ', text).lower().strip()
-    return text
+# Preprocess text
+# def preprocess_text(text):
+#     text = re.sub(r'\W+', ' ', text).lower().strip()
+#     return text
 
-def generate_sub_skills(skill):
-    return sub_categories.get(skill.strip(), [])
-
-def combine_skills_with_sub_categories(skills):
-    combined_skills = set()
-    for skill in skills:
-        combined_skills.add(skill.strip())
-        combined_skills.update(generate_sub_skills(skill.strip()))  # Include sub-skills
-    return list(combined_skills)
-
-def extract_skills_from_resume(resume_text, skills_list):
-    resume_text = preprocess_text(resume_text)
-    skills_found = set()
-    
-    for skill in skills_list:
-        skill_lower = skill.lower()
-        
-        # Check direct match
-        if re.search(r'\b' + re.escape(skill_lower) + r'\b', resume_text, re.IGNORECASE):
-            skills_found.add(skill)
-            continue
-        
-        # Check sub-categories
-        sub_skills = generate_sub_skills(skill)
-        for sub_skill in sub_skills:
-            sub_skill_lower = sub_skill.lower()
-            if re.search(r'\b' + re.escape(sub_skill_lower) + r'\b', resume_text, re.IGNORECASE):
-                skills_found.add(sub_skill)
-                break
-        
-        # Check key match and add sub-category skills
-        if skill_lower in sub_categories:
-            skills_found.update(sub_categories[skill_lower])
-    
-    return list(skills_found)
-
-
-
-def calculate_skill_match_percentage(matched_skills, skills):
-    if not skills:
-        return 0
-    
-    if all(skill in matched_skills for skill in skills):
-        return 100.0
-    else:
-        return (len(matched_skills) / len(skills)) * 100
-
-# def extract_skills_from_resume(resume_text, skills_list):
-#     resume_text = preprocess_text(resume_text)
-#     skills_found = set()
-
-#     for skill in skills_list:
-#         skill_lower = skill.lower()
-        
-#         # Check direct match for complete words with word boundaries and case insensitivity
-#         if re.search(r'\b' + re.escape(skill_lower) + r'\b', resume_text, re.IGNORECASE):
-#             skills_found.add(skill)
-#             continue
-        
-#         # Check sub-categories
-#         sub_skills = generate_sub_skills(skill)
-#         for sub_skill in sub_skills:
-#             sub_skill_lower = sub_skill.lower()
-#             if re.search(r'\b' + re.escape(sub_skill_lower) + r'\b', resume_text, re.IGNORECASE):
-#                 skills_found.add(sub_skill)  # Add sub-skill instead of the main skill
-#                 break
-        
-#         # Optionally, you can also check for exact matches without word boundaries as a fallback
-#         # if skill_lower in resume_text.lower():
-#         #     skills_found.add(skill)
-    
-#     return list(skills_found)
-
-
-
-# def calculate_skill_match_percentage(matched_skills, skills):
-#     if not skills:
-#         return 0
-    
-#     # Normalize skills to lowercase for comparison
-#     normalized_matched_skills = {skill.lower() for skill in matched_skills}
-#     normalized_skills = {skill.lower() for skill in skills}
-    
-#     if normalized_skills.intersection(normalized_matched_skills) == normalized_skills:
-#         return 100.0
-#     else:
-#         return (len(normalized_matched_skills) / len(normalized_skills)) * 100
-
-
-
+# Get job details including Gemini sub-skills
 def get_job_details(job_id):
-    # Assuming JobPost model and retrieval function as defined earlier
     job_post = JobPost.query.filter_by(id=job_id).first()
     if not job_post:
         return None
+
     job_details = {
         'client': job_post.client,
         'detailed_jd': job_post.detailed_jd if job_post.detailed_jd else "",
-        'skills': job_post.skills.split(', ') if job_post.skills else [],  # Split skills into a list
+        'skills': job_post.skills.split(', ') if job_post.skills else [],
         'experience_min': job_post.experience_min,
         'experience_max': job_post.experience_max
     }
+
     return job_details
 
+# Generate sub-skills from Gemini
+def generate_sub_skills_from_gemini(skill):
+    api_key = "AIzaSyABp7NiK0EKISlDFq57qb9TKeXh8cm2M2o"
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
-  
+    # prompt = f"""
+    # Given the following skills: {skill}, provide 10 related  technical topics for each technical skill, do not include soft skills (such as communication, fast learner). Present the output in the following format:
+
+    # sub_categories = {{
+    #     'Skill1': ['Topic1', 'Topic2', 'Topic3', ...],
+    #     'Skill2': ['Topic1', 'Topic2', 'Topic3', ...],
+    #     ...
+    # }}
+    # """
+
+    prompt = f"""
+    With the following skills: {skill}, outline the prerequisite technical skills and related branches. Ensure that soft skills (such as communication, fast learner) are not included. Structure the output as specified:
+
+    sub_categories = {{
+        'Skill1': ['Topic1', 'Topic2', 'Topic3', ...],
+        'Skill2': ['Topic1', 'Topic2', 'Topic3', ...],
+        ...
+    }}
+    """
+
+    response = model.generate_content(prompt)
+    response_text = response.candidates[0].content.parts[0].text.strip()
+
+    match = re.search(r"sub_categories\s*=\s*({.*})", response_text, re.DOTALL)
+    if match:
+        response_dict_str = match.group(1).replace("'", "\"")
+        try:
+            response_dict = json.loads(response_dict_str)
+        except json.JSONDecodeError as e:
+            print(f"Error parsing response dictionary: {e}")
+            return {}
+
+        cleaned_dict = {key.strip(): [item.strip() for item in value] for key, value in response_dict.items()}
+        print("cleaned_dict : ",cleaned_dict)
+        return cleaned_dict
+    else:
+        return {}
+
+# Extract skills from resume text
+# def extract_skills_from_resume(resume_text, gemini_sub_skills):
+#     resume_skills = set()
+#     resume_text = preprocess_text(resume_text)
+#     for skill, sub_skills in gemini_sub_skills.items():
+#         if skill.lower() in resume_text:
+#             resume_skills.add(skill.lower())
+#         for sub_skill in sub_skills:
+#             if sub_skill.lower() in resume_text:
+#                 resume_skills.add(skill.lower())
+#                 break
+#     return list(resume_skills)
+
+
+def preprocess_text(text):
+    # Convert to lowercase
+    text = text.lower()
+    # # Remove special characters and numbers
+    # text = re.sub(r'\W+', ' ', text)
+    # # Remove extra whitespace
+    # text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+# def extract_skills_from_gemini_resume(resume_text, gemini_sub_skills):
+#     resume_skills = set()
+#     resume_text = preprocess_text(resume_text)
+#     resume_words = set(resume_text.split())
+#     for skill, sub_skills in gemini_sub_skills.items():
+#         # Check for direct skill match
+#         try:
+#             subskills_list = [skill.lower() for skill in sub_skills[skill]]
+#         except:
+#             pass
+        
+#         try:
+#             matching_subskill = (set(subskills_list) & (resume_words))
+#         except:
+#             matching_subskill = ""
+        
+#         try:
+#             if skill.lower() in resume_words or (list(matching_subskill)[0] in list(resume_words) and subskills_list) or matching_subskill in ' '.join(subskills_list):
+#                 resume_skills.add(skill)
+#         except:
+#             if skill.lower() in resume_words:
+#                 resume_skills.add(skill)
+       
+#     return list(resume_skills)
+
+
+def extract_skills_from_gemini_resume(resume_text, gemini_sub_skills):
+    resume_skills = set()
+    resume_text = preprocess_text(resume_text)
+    
+    for skill, sub_skills in gemini_sub_skills.items():
+        # Preprocess each subskill
+        subskills_list = [preprocess_text(subskill) for subskill in sub_skills]
+        
+        # Create a pattern that matches any of the subskills within a broader description
+        combined_pattern = r'\b(?:' + '|'.join(re.escape(subskill) for subskill in subskills_list) + r')\b'
+        
+        if re.search(combined_pattern, resume_text):
+            resume_skills.add(skill)
+
+    return list(resume_skills)
+
+
+
+# Calculate skill match percentage
+def calculate_skill_match_percentage(matched_skills, skills):
+    if not skills:
+        return 0
+    return (len(matched_skills) / len(skills)) * 100
+
+# # Extract experience from resume
+# def extract_experience_from_resume(resume_text):
+#     experience_patterns = [
+#         r'(\d+(\.\d+)?)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*(?:month|months|mo|mos)?',
+#         r'(\d+)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*months?',
+#         r'(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)?',
+#         r'(\d+(\.\d+)?)\s*(?:-year)',
+#         r'Demonstrated\s+(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)',
+#         r'(\d+(\.\d+)?)\s*(?:years|yr|yrs)?\s*of\s*experience',
+#         r'(\d+(\.\d+)?)\s*years?\s*of\s*(?:IT|technical)?\s*experience'
+#     ]
+
+#     internship_pattern = r'\binternship\b|\bintern\b'
+#     phone_pattern = re.compile(r'\b(\+?\d[\d\-\.\s]+)?\d{10}\b')
+
+#     internship_match = re.search(internship_pattern, resume_text, re.IGNORECASE)
+#     if internship_match:
+#         return 0
+
+#     resume_text_no_phone = phone_pattern.sub('', resume_text)
+#     for pattern in experience_patterns:
+#         match = re.search(pattern, resume_text_no_phone, re.IGNORECASE)
+#         if match:
+#             years = float(match.group(1))
+#             months = int(match.group(3) or 0) if len(match.groups()) > 2 else 0
+#             total_months = int(years * 12) + months
+#             if total_months < 600:
+#                 return total_months
+
+#     return 0
+
 
 def extract_experience_from_resume(resume_text):
-    # Define patterns to match experience in years and months
-    experience_pattern_1 = r'(\d+(\.\d+)?)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*(?:month|months|mo|mos)?'
-    experience_pattern_2 = r'(\d+)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*months?'
-    experience_pattern_3 = r'(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)?'
-    experience_pattern_4 = r'(\d+(\.\d+)?)\s*(?:-year)'
-    experience_pattern_5 = r'Demonstrated\s+(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)'
-    experience_pattern_6 = r'(\d+(\.\d+)?)\s*(?:years|yr|yrs)?\s*of\s*experience'  # New pattern for "7.5 years of experience"
-    experience_pattern_7 = r'(\d+(\.\d+)?)\s*years?\s*of\s*(?:IT|technical)?\s*experience'  # New pattern for "6.3 years of IT experience"
+    experience_patterns = [
+        r'(\d+(\.\d+)?)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*(?:month|months|mo|mos)?',
+        r'(\d+)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*months?',
+        r'(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)?',
+        r'(\d+(\.\d+)?)\s*(?:-year)',
+        r'Demonstrated\s+(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)',
+        r'(\d+(\.\d+)?)\s*(?:years|yr|yrs)?\s*of\s*experience',
+        r'(\d+(\.\d+)?)\s*years?\s*of\s*(?:IT|technical)?\s*experience',
+        r'(\d+)\s*-\s*(\d+)\s*(?:years|yrs|yr|months|mos|mo)?\s*experience',
+        r'experience\s*of\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)',
+        r'over\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)?\s*experience',
+        r'(?:years|yrs|yr|months|mos|mo)\s*of\s*experience\s*(\d+(\.\d+)?)',
+        r'(\d+)\s*(?:years|yrs|yr|months|mos|mo)\s*\(to\s*date\)',
+        r'total\s*experience\s*of\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)',
+        r'experience\s*(?:from|since)\s*\d{4}\s*to\s*\d{4}',
+        r'around\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)?\s*of\s*experience'
+    ]
 
-    # Define a pattern to identify internship-related terms
     internship_pattern = r'\binternship\b|\bintern\b'
-
-    # Define pattern to match phone numbers
     phone_pattern = re.compile(r'\b(\+?\d[\d\-\.\s]+)?\d{10}\b')
 
-    # Search for the internship pattern in the resume text
     internship_match = re.search(internship_pattern, resume_text, re.IGNORECASE)
-
-    # If internship pattern is found, return 0 indicating no experience
     if internship_match:
         return 0
 
-    # Exclude phone numbers from the experience search
     resume_text_no_phone = phone_pattern.sub('', resume_text)
-
-    # Search for experience patterns
-    patterns = [
-        experience_pattern_1,
-        experience_pattern_2,
-        experience_pattern_3,
-        experience_pattern_4,
-        experience_pattern_5,
-        experience_pattern_6,  # Include the new pattern in the search
-        experience_pattern_7   # Include the new pattern for "6.3 years of IT experience"
-    ]
-    
-    for pattern in patterns:
+    for pattern in experience_patterns:
         match = re.search(pattern, resume_text_no_phone, re.IGNORECASE)
         if match:
             years = float(match.group(1))
             months = int(match.group(3) or 0) if len(match.groups()) > 2 else 0
             total_months = int(years * 12) + months
-            if total_months < 600:  # Assuming 50 years of experience as a reasonable upper limit
+            if total_months < 600:
                 return total_months
 
-    return 0  # Return 0 if no valid experience pattern is found or exceeds reasonable limit
+    return 0
 
-def extract_experience_from_dates(resume_text):
-    current_year = datetime.now().year
-    
-    date_pattern = r'(\b\d{4}\b)[\s-]*(Present|\b\d{4}\b)'
-    date_matches = re.findall(date_pattern, resume_text, re.IGNORECASE)
-    
-    total_experience_months = 0
-    experience_periods = []
-
-    for start_year, end_year in date_matches:
-        try:
-            start_year = int(start_year)
-            end_year = current_year if end_year.lower() == 'present' else int(end_year)
-            
-            if start_year <= end_year:
-                experience_periods.append((start_year, end_year))
-        except ValueError:
-            continue  # Skip invalid date ranges
-
-    # Merge overlapping periods and sum the total experience in months
-    merged_periods = merge_periods(experience_periods)
-    total_experience_months = sum((end - start + 1) * 12 for start, end in merged_periods)
-
-    return total_experience_months
-
+# Merge periods
 def merge_periods(periods):
-    # Sort periods by start year
     periods.sort(key=lambda x: x[0])
-    
     merged = []
     for current in periods:
         if not merged:
             merged.append(current)
         else:
             last = merged[-1]
-            if current[0] <= last[1]:  # Overlapping or contiguous
+            if current[0] <= last[1]:
                 merged[-1] = (last[0], max(last[1], current[1]))
             else:
                 merged.append(current)
@@ -1232,8 +753,9 @@ def check_resume_match():
     data = request.json
     job_id = data.get('job_id')
     user_id = data.get('user_id')
-    candidate_experience_str = data.get('candidate_experence')  # Fetch candidate experience as a string
-    print("candidate_experience_str: ",candidate_experience_str)
+    candidate_experience_str = data.get('candidate_experence')
+    print("candidate_experience_str  :",candidate_experience_str)
+    
     if 'resume' not in data:
         return jsonify({'error': 'No resume provided in the request'}), 400
 
@@ -1244,11 +766,9 @@ def check_resume_match():
 
     try:
         resume_text = extract_text_from_resume(resume_binary)
-        resume_text = extract_text_from_docx1(resume_binary)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
 
-    # Extract candidate details
     candidate_name = extract_name(resume_text)
     candidate_phone = extract_phone_number(resume_text)
     candidate_email = extract_email(resume_text)
@@ -1256,10 +776,41 @@ def check_resume_match():
     job_details = get_job_details(job_id)
     if not job_details:
         return jsonify({'error': 'Job details not found'}), 404
+
+    gemini_sub_skills = {skill: generate_sub_skills_from_gemini(skill) for skill in job_details['skills']}
+    matched_skills = extract_skills_from_gemini_resume(resume_text, gemini_sub_skills)
     
-    combined_skills = job_details['skills']
-    matched_skills = extract_skills_from_resume(resume_text, combined_skills)
+    print("Resume Text:", resume_text)  # Debug
+    print("Gemini Sub Skills:", gemini_sub_skills)  # Debug
+    print("Matched Skills:", matched_skills)  # Debug
+
     skill_match_percentage = calculate_skill_match_percentage(matched_skills, job_details['skills'])
+
+    # candidate_experience = None
+    # if candidate_experience_str:
+    #     try:
+    #         candidate_experience = candidate_experience_str
+    #     except ValueError:
+    #         candidate_experience = None
+
+    # if candidate_experience is None or candidate_experience == 0.0:
+    #     candidate_experience_months = extract_experience_from_resume(resume_text)
+    #     candidate_experience_years = candidate_experience_months / 12
+    #     candidate_experience_formatted = f"{math.floor(candidate_experience_years)}.{candidate_experience_months % 12}"
+    # else:
+    #     candidate_experience_months = int(candidate_experience * 12)
+    #     candidate_experience_years = candidate_experience_months / 12
+    #     candidate_experience_formatted = f"{math.floor(candidate_experience_years)}.{candidate_experience_months % 12}"
+
+    # experience_min_months = int(float(job_details['experience_min']) * 12)
+    # experience_max_months = int(float(job_details['experience_max']) * 12)
+
+    # if experience_min_months <= candidate_experience_months <= experience_max_months:
+    #     experience_match_percentage = 100
+    #     experience_unmatch_percentage = 0
+    # else:
+    #     experience_match_percentage = min(candidate_experience_months, experience_max_months) / experience_min_months * 100
+    #     experience_unmatch_percentage = 100 - experience_match_percentage
 
     # Convert candidate_experience_str to float or int if possible, or fallback to None
     if candidate_experience_str is not None and candidate_experience_str.strip():  # Check if not None and not empty
@@ -1283,29 +834,6 @@ def check_resume_match():
 
     experience_min_months = int(float(job_details['experience_min']) * 12)
     experience_max_months = int(float(job_details['experience_max']) * 12)
-
-    # if candidate_experience_months >= experience_min_months and candidate_experience_months <= experience_max_months:
-    #     experience_match_percentage = 100
-    #     experience_unmatch_percentage = 0
-    # else:
-    #     if candidate_experience_months < experience_min_months:
-    #         experience_match_percentage = (candidate_experience_months / experience_min_months) * 100
-    #         experience_unmatch_percentage = 100 - experience_match_percentage
-    #     elif candidate_experience_months > experience_max_months:
-    #         experience_match_percentage = (experience_max_months / candidate_experience_months) * 100
-    #         experience_unmatch_percentage = 100 - experience_match_percentage
-
-
-    # if candidate_experience_months >= experience_min_months and candidate_experience_months <= experience_max_months:
-    #     experience_match_percentage = 100
-    #     experience_unmatch_percentage = 0
-    # elif candidate_experience_months < experience_min_months:
-    #     experience_match_percentage = (candidate_experience_months / experience_min_months) * 100
-    #     experience_unmatch_percentage = 100 - experience_match_percentage
-    # else:  # candidate_experience_months > experience_max_months
-    #     # Adjust the calculation to properly reflect the mismatch percentage
-    #     experience_match_percentage = (experience_max_months / candidate_experience_months) * 100
-    #     experience_unmatch_percentage = 100 - experience_match_percentage
     if candidate_experience_months >= experience_min_months and candidate_experience_months <= experience_max_months:
         experience_match_percentage = 100
         experience_unmatch_percentage = 0
@@ -1319,6 +847,7 @@ def check_resume_match():
         elif candidate_experience_months > experience_max_months:
             experience_match_percentage = (experience_max_months / candidate_experience_months) * 100
             experience_unmatch_percentage = 100 - experience_match_percentage
+
     overall_match_percentage = (skill_match_percentage + experience_match_percentage) / 2
 
     response_data = {
@@ -1333,15 +862,714 @@ def check_resume_match():
         'overall_match_percentage': overall_match_percentage,
         'matched_skills': matched_skills,
         'resume_skills': matched_skills,
+        'gemini_sub_skills': gemini_sub_skills,
         'user_id': user_id,
         'job_id': job_id,
         'candidate_experience': candidate_experience_formatted,
-        'candidate_name' : candidate_name,
-        'candidate_phone' : candidate_phone,
-        'candidate_email' : candidate_email
+        'candidate_name': candidate_name,
+        'candidate_phone': candidate_phone,
+        'candidate_email': candidate_email
     }
 
     return jsonify(response_data), 200
+
+
+#################################################################################################
+
+
+# sub_categories = {
+#     # Existing categories...
+#     'Python': ['numpy', 'pandas', 'matplotlib', 'scikit-learn', 'tensorflow', 'keras'],
+#     'Java': ['Spring Boot', 'J2EE', 'Hibernate', 'Servlets', 'JSP', 'Microservices'],
+#     'C++': ['STL', 'OOP', 'Templates', 'Multi-threading', 'Boost'],
+#     'AI': ['Machine Learning', 'Deep Learning', 'Natural Language Processing', 'Computer Vision'],
+#     'JavaScript': ['React', 'Node.js', 'Angular', 'Vue.js', 'TypeScript', 'ES6'],
+#     'HTML': ['HTML5', 'XML', 'JSON', 'Bootstrap'],
+#     'CSS': ['CSS3', 'SASS', 'LESS'],
+#     'Database Management': ['SQL', 'MySQL', 'PostgreSQL', 'MongoDB', 'Oracle'],
+#     'Web Development': ['RESTful APIs', 'GraphQL', 'WebSockets', 'Django', 'Flask'],
+#     'DevOps': ['Docker', 'Kubernetes', 'Jenkins', 'Ansible', 'Terraform'],
+#     'Cloud Computing': ['AWS', 'Azure', 'Google Cloud', 'Firebase'],
+#     'Mobile Development': ['iOS Development', 'Android Development', 'React Native', 'Flutter'],
+#     'Testing': ['Unit Testing', 'Integration Testing', 'Selenium', 'JUnit', 'Cypress'],
+#     'Version Control': ['Git', 'SVN', 'Mercurial'],
+#     'Agile Methodology': ['Scrum', 'Kanban', 'Agile Project Management'],
+#     'Big Data': ['Hadoop', 'Spark', 'Hive', 'MapReduce', 'BigQuery'],
+#     'Security': ['SSL/TLS', 'OWASP Top 10', 'Encryption', 'Firewalls', 'Penetration Testing'],
+#     'UI/UX Design': ['Adobe XD', 'Sketch', 'Figma', 'User Interface Design', 'User Experience Design'],
+#     'PHP': ['Laravel', 'Symfony', 'CodeIgniter', 'WordPress', 'Magento'],
+#     'Ruby': ['Ruby on Rails', 'Sinatra', 'Rack', 'RSpec', 'Cucumber'],
+#     'Go': ['Goroutines', 'Channels', 'RESTful APIs', 'Concurrency', 'Google App Engine'],
+#     'Swift': ['iOS SDK', 'Cocoa Touch', 'SwiftUI', 'Combine', 'Realm'],
+#     'Kotlin': ['Android SDK', 'Coroutines', 'Jetpack', 'Room', 'Ktor'],
+#     'R': ['Data Visualization', 'Data Manipulation', 'Statistical Analysis', 'Shiny', 'ggplot2'],
+#     'Perl': ['CGI', 'Mojolicious', 'DBI', 'Moose', 'Dancer'],
+#     'Scala': ['Akka', 'Play Framework', 'Spark Streaming', 'Slick', 'ScalaTest'],
+#     'TypeScript': ['Angular', 'React', 'Vue.js', 'Node.js', 'TypeORM'],
+#     'Lua': ['Corona SDK', 'LÖVE', 'LuaJIT', 'Torch', 'MoonScript'],
+#     'Shell Scripting': ['Bash', 'Shell Commands', 'Shell Variables', 'Script Automation', 'SED and AWK'],
+#     'Assembly Language': ['x86 Assembly', 'ARM Assembly', 'MIPS Assembly', 'NASM', 'Keil'],
+#     'MATLAB': ['Simulink', 'Image Processing Toolbox', 'Signal Processing Toolbox', 'Machine Learning Toolbox', 'Deep Learning Toolbox'],
+#     'VB.NET': ['ASP.NET', 'Windows Forms', 'LINQ', 'ADO.NET', 'Entity Framework'],
+#     'C#': ['.NET Framework', '.NET Core', 'ASP.NET Core', 'Unity', 'LINQ'],
+#     'Dart': ['Flutter', 'Dart VM', 'AngularDart', 'Aqueduct', 'DartPad'],
+#     'Julia': ['DataFrames', 'Plots', 'JuMP', 'Parallel Computing', 'Metaprogramming'],
+#     'Haskell': ['GHC', 'Functional Programming', 'Monads', 'QuickCheck', 'Parsec'],
+#     'Groovy': ['Grails', 'Spock Framework', 'Gradle', 'Geb', 'Ratpack'],
+#     'Elixir': ['Phoenix Framework', 'Ecto', 'OTP', 'GenServer', 'Mix'],
+#     'F#': ['.NET Framework', 'Fable', 'Functional Programming', 'Type Providers', 'Fable'],
+#     'Rust': ['Ownership', 'Borrowing', 'Concurrency', 'Actix', 'Rocket'],
+#     'Objective-C': ['Cocoa Touch', 'iOS Development', 'Swift', 'Core Data', 'UIKit'],
+#     'COBOL': ['Mainframe', 'JCL', 'CICS', 'DB2', 'COBOL-IT'],
+#     'Fortran': ['Numerical Computing', 'Parallel Programming', 'DO loops', 'Array Operations', 'GFortran'],
+#     'Ada': ['Concurrency', 'Safety-Critical Systems', 'GNAT', 'SPARK', 'Real-Time Systems'],
+#     'Scheme': ['Functional Programming', 'LISP', 'MIT/GNU Scheme', 'Racket', 'Guile'],
+#     'Prolog': ['Logic Programming', 'Datalog', 'SWI-Prolog', 'GNU Prolog', 'CLP(FD)'],
+#     'LISP': ['Common Lisp', 'Clojure', 'Scheme', 'Emacs Lisp', 'Racket'],
+#     'Smalltalk': ['Object-Oriented Programming', 'Squeak', 'Pharo', 'Seaside', 'Morphic'],
+#     'Erlang': ['OTP', 'Concurrency', 'Distributed Systems', 'Elixir', 'Riak'],
+#     'D': ['Systems Programming', 'Garbage Collection', 'DUB', 'Vibe.d', 'GTKD'],
+#     'PowerShell': ['Windows Administration', 'Scripting', 'Azure PowerShell', 'PowerShell Core', 'Active Directory'],
+#     'Clojure': ['Functional Programming', 'Concurrency', 'LISP', 'ClojureScript', 'Datomic'],
+#     'VHDL': ['FPGA', 'Digital Design', 'RTL Design', 'ModelSim', 'Vivado'],
+#     'Verilog': ['ASIC', 'FPGA', 'SystemVerilog', 'Simulation', 'Synthesis'],
+
+#     # Additional categories...
+#     'Ruby on Rails': ['ActiveRecord', 'ActionView', 'ActionMailer', 'RSpec', 'Capistrano'],
+#     'AngularJS': ['Controllers', 'Directives', 'Services', 'Filters', 'Routing'],
+#     'Ember.js': ['Ember Data', 'Templates', 'Components', 'Controllers', 'Routing'],
+#     'Backbone.js': ['Models', 'Views', 'Collections', 'Routers', 'Underscore.js'],
+#     'Meteor.js': ['Meteor Methods', 'Blaze', 'Tracker', 'Accounts', 'Reactivity'],
+#     'Polymer': ['Custom Elements', 'Templates', 'Data Binding', 'Events', 'Shadow DOM'],
+#     'Golang': ['Concurrency', 'Channels', 'Interfaces', 'Benchmarking', 'WebAssembly'],
+#     'Lua': ['Coroutines', 'Metatables', 'LuaSocket', 'Lapis', 'MoonScript'],
+#     'Django': ['Models', 'Views', 'Forms', 'Templates', 'Admin'],
+#     'Flask': ['Routes', 'Templates', 'Blueprints', 'SQLAlchemy', 'RESTful APIs'],
+#     'Vue.js': ['Components', 'Directives', 'Vue Router', 'Vuex', 'Vue CLI'],
+#     'Spring Framework': ['Dependency Injection', 'Spring MVC', 'Spring Security', 'Spring Data', 'Spring Boot'],
+#     'Hibernate': ['Mapping', 'Transactions', 'Caching', 'Query Language', 'Entity Manager'],
+#     'Node.js': ['Express.js', 'NPM', 'Event-driven Programming', 'RESTful APIs', 'Socket.io'],
+#     'React Native': ['Components', 'Navigation', 'State Management', 'Hooks', 'Redux'],
+#     'Flutter': ['Widgets', 'State Management', 'Material Design', 'Firebase Integration', 'Plugins'],
+#     'ASP.NET': ['MVC', 'Web Forms', 'Entity Framework', 'Identity', 'Core'],
+#     'Symfony': ['Bundles', 'Doctrine', 'Twig', 'Console', 'Security'],
+#     'Laravel': ['Eloquent ORM', 'Blade Templates', 'Migrations', 'Events', 'Queues'],
+#     'CodeIgniter': ['Controllers', 'Models', 'Views', 'Helpers', 'Form Validation'],
+#     'Yii': ['Models', 'Controllers', 'Views', 'Widgets', 'Gii'],
+#     'MVC Frameworks': ['Model', 'View', 'Controller', 'Routing', 'Templating'],
+#     'Serverless Architecture': ['AWS Lambda', 'Azure Functions', 'Google Cloud Functions', 'Event-driven', 'NoOps'],
+#     'Microservices Architecture': ['Service Discovery', 'API Gateway', 'Circuit Breaker', 'Event Sourcing', 'Service Mesh'],
+#     'GraphQL': ['Schemas', 'Resolvers', 'Mutations', 'Subscriptions', 'Apollo Client'],
+#     'RESTful APIs': ['HTTP Methods', 'Authentication', 'JSON', 'OpenAPI', 'Swagger'],
+#     'SOAP': ['WSDL', 'UDDI', 'XML', 'WS-Security', 'Web Services'],
+#     'Blockchain Development': ['Smart Contracts', 'Decentralized Apps', 'Consensus Algorithms', 'Cryptocurrencies', 'Hyperledger'],
+#     'AR/VR Development': ['Unity3D', 'Unreal Engine', 'ARKit', 'ARCore', 'Vuforia'],
+#     'Quantum Computing': ['Qubits', 'Quantum Gates', 'Quantum Algorithms', 'Quantum Teleportation', 'Superposition'],
+#     'Low-Code Development': ['Visual Programming', 'Drag-and-drop', 'Workflow Automation', 'App Deployment', 'No-code Platforms'],
+#     'PWA': ['Service Workers', 'App Shell', 'Push Notifications', 'Offline Support', 'Add to Home Screen'],
+#     'NoSQL Databases': ['Document Store', 'Key-Value Store', 'Column-Family Store', 'Graph Store', 'Time Series Store'],
+#     'Blockchain': ['Decentralized Ledger', 'Mining', 'Cryptocurrency', 'Smart Contracts', 'Distributed Consensus'],
+#     'RPA (Robotic Process Automation)': ['Automation Anywhere', 'UiPath', 'Blue Prism', 'Process Mining', 'RPA Bots'],
+#     'Cybersecurity': ['Ethical Hacking', 'Network Security', 'Cryptography', 'Incident Response', 'Security Operations'],
+#     'Artificial Intelligence': ['Machine Learning', 'Neural Networks', 'Computer Vision', 'Natural Language Processing', 'AI Ethics'],
+#     '5G Networks': ['Network Slicing', 'Edge Computing', 'Millimeter Wave', 'Virtual RAN', 'Beamforming'],
+#     'Edge Computing': ['Fog Computing', 'Cloudlet', 'Mobile Edge Computing', 'Edge Analytics', 'Edge Security'],
+#     'Quantum Cryptography': ['Quantum Key Distribution', 'Quantum Networks', 'Post-Quantum Cryptography', 'Quantum Hacking', 'Quantum Encryption'],
+#     'Augmented Reality': ['Marker-based AR', 'Markerless AR', 'SLAM', 'AR Cloud', 'AR Glasses'],
+#     'Virtual Reality': ['Immersive VR', '360-degree Video', 'VR Gaming', 'VR Training', 'VR Therapy'],
+#     'Ethical Hacking': ['Footprinting', 'Scanning', 'Enumeration', 'Sniffing', 'Social Engineering'],
+#     'Penetration Testing': ['Black Box Testing', 'White Box Testing', 'Gray Box Testing', 'Vulnerability Assessment', 'Exploitation'],
+#     'Incident Response': ['Threat Detection', 'Forensics Analysis', 'Incident Containment', 'Root Cause Analysis', 'Remediation'],
+#     'IoT Security': ['Device Authentication', 'Data Encryption', 'Firmware Updates', 'Access Control', 'Privacy Protection'],
+#     'Cloud Security': ['Identity and Access Management', 'Data Encryption', 'Security Compliance', 'Threat Intelligence', 'Security Orchestration'],
+#     'Mobile Security': ['App Hardening', 'Secure APIs', 'Jailbreaking Detection', 'Rooting Detection', 'Code Obfuscation'],
+#     'AI Ethics': ['Fairness', 'Accountability', 'Transparency', 'Privacy', 'Bias'],
+#     'Data Science': ['Statistical Analysis', 'Data Mining', 'Predictive Modeling', 'Data Visualization', 'Big Data'],
+#     'Bioinformatics': ['Genomics', 'Proteomics', 'Computational Biology', 'Biostatistics', 'Bioinformatics Tools'],
+#     'Health Informatics': ['Electronic Health Records', 'Health Data Analytics', 'Medical Imaging', 'Clinical Decision Support', 'Telemedicine'],
+#     'Geographic Information Systems (GIS)': ['Spatial Analysis', 'Remote Sensing', 'GIS Software', 'Cartography', 'Geocoding'],
+#     'Business Intelligence (BI)': ['Data Warehousing', 'Data Integration', 'OLAP', 'ETL Processes', 'Data Mining'],
+#     'Financial Technology (FinTech)': ['Payments', 'Blockchain', 'Robo-advisors', 'InsurTech', 'RegTech'],
+#     'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
+#     'EdTech': ['Learning Management Systems', 'Online Education', 'eLearning Platforms', 'Educational Technology Tools', 'MOOCs'],
+#     'GovTech': ['Digital Transformation', 'Smart Cities', 'Civic Tech', 'Open Data', 'Government Analytics'],
+#     'AgTech': ['Precision Agriculture', 'Farm Management Software', 'AgriTech Startups', 'Vertical Farming', 'AgriTech Solutions'],
+#     'Space Tech': ['Satellite Technology', 'Space Exploration', 'Rocket Science', 'Spacecraft Design', 'Astronautics'],
+#     'Green Tech': ['Renewable Energy', 'Sustainability', 'Environmental Monitoring', 'CleanTech', 'Green Building'],
+#     'MarTech': ['Marketing Automation', 'Digital Marketing Analytics', 'Customer Relationship Management (CRM)', 'Content Management Systems', 'SEO'],
+#     'InsurTech': ['Digital Insurance Platforms', 'Claims Processing Automation', 'Underwriting Automation', 'Insurance Analytics', 'InsurTech Startups'],
+#     'Retail Tech': ['E-commerce Platforms', 'Point-of-Sale Systems', 'Supply Chain Management', 'Retail Analytics', 'Omni-channel Retailing'],
+#     'HR Tech': ['Human Resource Information Systems (HRIS)', 'Talent Acquisition Software', 'Employee Engagement Platforms', 'Performance Management Systems', 'HR Analytics'],
+#     'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
+#     'AdTech': ['Programmatic Advertising', 'Ad Exchange Platforms', 'Ad Fraud Detection', 'Ad Targeting', 'Data Management Platforms'],
+#     'Logistics Tech': ['Supply Chain Optimization', 'Fleet Management Systems', 'Last-Mile Delivery Solutions', 'Warehouse Management Systems', 'Freight Forwarding Software'],
+#     'Food Tech': ['Food Delivery Platforms', 'Restaurant Management Software', 'Food Safety Technology', 'AgriTech Solutions', 'Food Analytics'],
+#     'Sports Tech': ['Sports Analytics', 'Fitness Tracking Apps', 'Athlete Performance Management', 'Sports Biomechanics', 'eSports Platforms'],
+#     'Travel Tech': ['Online Travel Agencies', 'Travel Management Software', 'Booking Platforms', 'Travel Expense Management', 'Hospitality Tech'],
+#     'Telecom Tech': ['5G Networks', 'Fiber Optics', 'Mobile Infrastructure', 'Telecom Software', 'Network Security'],
+#     'Entertainment Tech': ['Streaming Platforms', 'Gaming Consoles', 'Music Streaming Services', 'Video Production Tools', 'Virtual Reality (VR)'],
+#     'Media Tech': ['Digital Publishing Platforms', 'Content Management Systems', 'Media Analytics', 'Broadcasting Technology', 'Media Distribution'],
+#     'Fashion Tech': ['Virtual Try-On', 'Fashion E-commerce Platforms', 'AR Fashion Apps', 'Fashion Data Analytics', 'Sustainable Fashion Tech'],
+#     'Real Estate Tech': ['Property Management Software', 'Real Estate Marketplaces', 'VR Property Tours', 'Real Estate CRM', 'Automated Valuation Models'],
+#     'Health Tech': ['Telemedicine Platforms', 'Health Data Analytics', 'Medical Imaging AI', 'Patient Management Software', 'Health Wearables'],
+#     'Construction Tech': ['Building Information Modeling (BIM)', 'Construction Management Software', 'Drones in Construction', 'IoT in Construction', 'Prefabrication Technology'],
+#     'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
+#     'Energy Tech': ['Smart Grids', 'Renewable Energy Technology', 'Energy Storage Solutions', 'Energy Management Systems', 'Microgrid Technology'],
+#     'Agritech': ['Precision Agriculture', 'Farm Management Software', 'AgriTech Startups', 'Vertical Farming', 'AgriTech Solutions'],
+#     'Govtech': ['Digital Transformation', 'Smart Cities', 'Civic Tech', 'Open Data', 'Government Analytics'],
+#     'Retail Tech': ['E-commerce Platforms', 'Point-of-Sale Systems', 'Supply Chain Management', 'Retail Analytics', 'Omni-channel Retailing'],
+#     'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
+#     'Travel Tech': ['Online Travel Agencies', 'Travel Management Software', 'Booking Platforms', 'Travel Expense Management', 'Hospitality Tech'],
+#     'Telecom Tech': ['5G Networks', 'Fiber Optics', 'Mobile Infrastructure', 'Telecom Software', 'Network Security'],
+#     'EdTech': ['Learning Management Systems', 'Online Education', 'eLearning Platforms', 'Educational Technology Tools', 'MOOCs'],
+#     'Construction Tech': ['Building Information Modeling (BIM)', 'Construction Management Software', 'Drones in Construction', 'IoT in Construction', 'Prefabrication Technology'],
+#     'Health Tech': ['Telemedicine Platforms', 'Health Data Analytics', 'Medical Imaging AI', 'Patient Management Software', 'Health Wearables'],
+#     'FinTech': ['Payments', 'Blockchain', 'Robo-advisors', 'InsurTech', 'RegTech'],
+#     'Fashion Tech': ['Virtual Try-On', 'Fashion E-commerce Platforms', 'AR Fashion Apps', 'Fashion Data Analytics', 'Sustainable Fashion Tech'],
+#     'Energy Tech': ['Smart Grids', 'Renewable Energy Technology', 'Energy Storage Solutions', 'Energy Management Systems', 'Microgrid Technology'],
+#     'Media Tech': ['Digital Publishing Platforms', 'Content Management Systems', 'Media Analytics', 'Broadcasting Technology', 'Media Distribution'],
+#     'Food Tech': ['Food Delivery Platforms', 'Restaurant Management Software', 'Food Safety Technology', 'AgriTech Solutions', 'Food Analytics'],
+#     'Automotive Tech': ['Autonomous Vehicles', 'Connected Cars', 'Electric Vehicle Technology', 'Vehicle Telematics', 'Automotive Cybersecurity'],
+#     'Blockchain': ['Decentralized Ledger', 'Mining', 'Cryptocurrency', 'Smart Contracts', 'Distributed Consensus'],
+#     'Cybersecurity': ['Ethical Hacking', 'Network Security', 'Cryptography', 'Incident Response', 'Security Operations'],
+#     '5G Networks': ['Network Slicing', 'Edge Computing', 'Millimeter Wave', 'Virtual RAN', 'Beamforming'],
+#     'Edge Computing': ['Fog Computing', 'Cloudlet', 'Mobile Edge Computing', 'Edge Analytics', 'Edge Security'],
+#     'Quantum Cryptography': ['Quantum Key Distribution', 'Quantum Networks', 'Post-Quantum Cryptography', 'Quantum Hacking', 'Quantum Encryption'],
+#     'Augmented Reality': ['Marker-based AR', 'Markerless AR', 'SLAM', 'AR Cloud', 'AR Glasses'],
+#     'Virtual Reality': ['Immersive VR', '360-degree Video', 'VR Gaming', 'VR Training', 'VR Therapy'],
+#     'Ethical Hacking': ['Footprinting', 'Scanning', 'Enumeration', 'Sniffing', 'Social Engineering'],
+#     'Penetration Testing': ['Black Box Testing', 'White Box Testing', 'Gray Box Testing', 'Vulnerability Assessment', 'Exploitation'],
+#     'Incident Response': ['Threat Detection', 'Forensics Analysis', 'Incident Containment', 'Root Cause Analysis', 'Remediation'],
+#     'IoT Security': ['Device Authentication', 'Data Encryption', 'Firmware Updates', 'Access Control', 'Privacy Protection'],
+#     'Cloud Security': ['Identity and Access Management', 'Data Encryption', 'Security Compliance', 'Threat Intelligence', 'Security Orchestration'],
+#     'Mobile Security': ['App Hardening', 'Secure APIs', 'Jailbreaking Detection', 'Rooting Detection', 'Code Obfuscation'],
+#     'AI Ethics': ['Fairness', 'Accountability', 'Transparency', 'Privacy', 'Bias'],
+#     'Data Science': ['Statistical Analysis', 'Data Mining', 'Predictive Modeling', 'Data Visualization', 'Big Data'],
+#     'Bioinformatics': ['Genomics', 'Proteomics', 'Computational Biology', 'Biostatistics', 'Bioinformatics Tools'],
+#     'Health Informatics': ['Electronic Health Records', 'Health Data Analytics', 'Medical Imaging', 'Clinical Decision Support', 'Telemedicine'],
+#     'Geographic Information Systems (GIS)': ['Spatial Analysis', 'Remote Sensing', 'GIS Software', 'Cartography', 'Geocoding'],
+#     'Business Intelligence (BI)': ['Data Warehousing', 'Data Integration', 'OLAP', 'ETL Processes', 'Data Mining'],
+#     'Financial Technology (FinTech)': ['Payments', 'Blockchain', 'Robo-advisors', 'InsurTech', 'RegTech'],
+#     'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
+#     'EdTech': ['Learning Management Systems', 'Online Education', 'eLearning Platforms', 'Educational Technology Tools', 'MOOCs'],
+#     'GovTech': ['Digital Transformation', 'Smart Cities', 'Civic Tech', 'Open Data', 'Government Analytics'],
+#     'AgTech': ['Precision Agriculture', 'Farm Management Software', 'AgriTech Startups', 'Vertical Farming', 'AgriTech Solutions'],
+#     'Space Tech': ['Satellite Technology', 'Space Exploration', 'Rocket Science', 'Spacecraft Design', 'Astronautics'],
+#     'Green Tech': ['Renewable Energy', 'Sustainability', 'Environmental Monitoring', 'CleanTech', 'Green Building'],
+#     'MarTech': ['Marketing Automation', 'Digital Marketing Analytics', 'Customer Relationship Management (CRM)', 'Content Management Systems', 'SEO'],
+#     'InsurTech': ['Digital Insurance Platforms', 'Claims Processing Automation', 'Underwriting Automation', 'Insurance Analytics', 'InsurTech Startups'],
+#     'Retail Tech': ['E-commerce Platforms', 'Point-of-Sale Systems', 'Supply Chain Management', 'Retail Analytics', 'Omni-channel Retailing'],
+#     'HR Tech': ['Human Resource Information Systems (HRIS)', 'Talent Acquisition Software', 'Employee Engagement Platforms', 'Performance Management Systems', 'HR Analytics'],
+#     'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
+#     'AdTech': ['Programmatic Advertising', 'Ad Exchange Platforms', 'Ad Fraud Detection', 'Ad Targeting', 'Data Management Platforms'],
+#     'Logistics Tech': ['Supply Chain Optimization', 'Fleet Management Systems', 'Last-Mile Delivery Solutions', 'Warehouse Management Systems', 'Freight Forwarding Software'],
+#     'Food Tech': ['Food Delivery Platforms', 'Restaurant Management Software', 'Food Safety Technology', 'AgriTech Solutions', 'Food Analytics'],
+#     'Sports Tech': ['Sports Analytics', 'Fitness Tracking Apps', 'Athlete Performance Management', 'Sports Biomechanics', 'eSports Platforms'],
+#     'Travel Tech': ['Online Travel Agencies', 'Travel Management Software', 'Booking Platforms', 'Travel Expense Management', 'Hospitality Tech'],
+#     'Telecom Tech': ['5G Networks', 'Fiber Optics', 'Mobile Infrastructure', 'Telecom Software', 'Network Security'],
+#     'Entertainment Tech': ['Streaming Platforms', 'Gaming Consoles', 'Music Streaming Services', 'Video Production Tools', 'Virtual Reality (VR)'],
+#     'Media Tech': ['Digital Publishing Platforms', 'Content Management Systems', 'Media Analytics', 'Broadcasting Technology', 'Media Distribution'],
+#     'Fashion Tech': ['Virtual Try-On', 'Fashion E-commerce Platforms', 'AR Fashion Apps', 'Fashion Data Analytics', 'Sustainable Fashion Tech'],
+#     'Real Estate Tech': ['Property Management Software', 'Real Estate Marketplaces', 'VR Property Tours', 'Real Estate CRM', 'Automated Valuation Models'],
+#     'Health Tech': ['Telemedicine Platforms', 'Health Data Analytics', 'Medical Imaging AI', 'Patient Management Software', 'Health Wearables'],
+#     'Construction Tech': ['Building Information Modeling (BIM)', 'Construction Management Software', 'Drones in Construction', 'IoT in Construction', 'Prefabrication Technology'],
+#     'Energy Tech': ['Smart Grids', 'Renewable Energy Technology', 'Energy Storage Solutions', 'Energy Management Systems', 'Microgrid Technology'],
+#     'Agritech': ['Precision Agriculture', 'Farm Management Software', 'AgriTech Startups', 'Vertical Farming', 'AgriTech Solutions'],
+#     'Govtech': ['Digital Transformation', 'Smart Cities', 'Civic Tech', 'Open Data', 'Government Analytics'],
+#     'Retail Tech': ['E-commerce Platforms', 'Point-of-Sale Systems', 'Supply Chain Management', 'Retail Analytics', 'Omni-channel Retailing'],
+#     'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
+#     'Travel Tech': ['Online Travel Agencies', 'Travel Management Software', 'Booking Platforms', 'Travel Expense Management', 'Hospitality Tech'],
+#     'Telecom Tech': ['5G Networks', 'Fiber Optics', 'Mobile Infrastructure', 'Telecom Software', 'Network Security'],
+#     'EdTech': ['Learning Management Systems', 'Online Education', 'eLearning Platforms', 'Educational Technology Tools', 'MOOCs'],
+#     'Construction Tech': ['Building Information Modeling (BIM)', 'Construction Management Software', 'Drones in Construction', 'IoT in Construction', 'Prefabrication Technology'],
+#     'Health Tech': ['Telemedicine Platforms', 'Health Data Analytics', 'Medical Imaging AI', 'Patient Management Software', 'Health Wearables'],
+#     'FinTech': ['Payments', 'Blockchain', 'Robo-advisors', 'InsurTech', 'RegTech'],
+#     'Fashion Tech': ['Virtual Try-On', 'Fashion E-commerce Platforms', 'AR Fashion Apps', 'Fashion Data Analytics', 'Sustainable Fashion Tech'],
+#     'Energy Tech': ['Smart Grids', 'Renewable Energy Technology', 'Energy Storage Solutions', 'Energy Management Systems', 'Microgrid Technology'],
+#     'Media Tech': ['Digital Publishing Platforms', 'Content Management Systems', 'Media Analytics', 'Broadcasting Technology', 'Media Distribution'],
+#     'Food Tech': ['Food Delivery Platforms', 'Restaurant Management Software', 'Food Safety Technology', 'AgriTech Solutions', 'Food Analytics'],
+#     'Automotive Tech': ['Autonomous Vehicles', 'Connected Cars', 'Electric Vehicle Technology', 'Vehicle Telematics', 'Automotive Cybersecurity'],
+#     'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
+#     'Blockchain': ['Decentralized Ledger', 'Mining', 'Cryptocurrency', 'Smart Contracts', 'Distributed Consensus'],
+#     'Cybersecurity': ['Ethical Hacking', 'Network Security', 'Cryptography', 'Incident Response', 'Security Operations'],
+#     '5G Networks': ['Network Slicing', 'Edge Computing', 'Millimeter Wave', 'Virtual RAN', 'Beamforming'],
+#     'Edge Computing': ['Fog Computing', 'Cloudlet', 'Mobile Edge Computing', 'Edge Analytics', 'Edge Security'],
+#     'Quantum Cryptography': ['Quantum Key Distribution', 'Quantum Networks', 'Post-Quantum Cryptography', 'Quantum Hacking', 'Quantum Encryption'],
+#     'Augmented Reality': ['Marker-based AR', 'Markerless AR', 'SLAM', 'AR Cloud', 'AR Glasses'],
+#     'Virtual Reality': ['Immersive VR', '360-degree Video', 'VR Gaming', 'VR Training', 'VR Therapy'],
+#     'Ethical Hacking': ['Footprinting', 'Scanning', 'Enumeration', 'Sniffing', 'Social Engineering'],
+#     'Penetration Testing': ['Black Box Testing', 'White Box Testing', 'Gray Box Testing', 'Vulnerability Assessment', 'Exploitation'],
+#     'Incident Response': ['Threat Detection', 'Forensics Analysis', 'Incident Containment', 'Root Cause Analysis', 'Remediation'],
+#     'IoT Security': ['Device Authentication', 'Data Encryption', 'Firmware Updates', 'Access Control', 'Privacy Protection'],
+#     'Cloud Security': ['Identity and Access Management', 'Data Encryption', 'Security Compliance', 'Threat Intelligence', 'Security Orchestration'],
+#     'Mobile Security': ['App Hardening', 'Secure APIs', 'Jailbreaking Detection', 'Rooting Detection', 'Code Obfuscation'],
+#     'AI Ethics': ['Fairness', 'Accountability', 'Transparency', 'Privacy', 'Bias'],
+#     'Data Science': ['Statistical Analysis', 'Data Mining', 'Predictive Modeling', 'Data Visualization', 'Big Data'],
+#     'Bioinformatics': ['Genomics', 'Proteomics', 'Computational Biology', 'Biostatistics', 'Bioinformatics Tools'],
+#     'Health Informatics': ['Electronic Health Records', 'Health Data Analytics', 'Medical Imaging', 'Clinical Decision Support', 'Telemedicine'],
+#     'Geographic Information Systems (GIS)': ['Spatial Analysis', 'Remote Sensing', 'GIS Software', 'Cartography', 'Geocoding'],
+#     'Business Intelligence (BI)': ['Data Warehousing', 'Data Integration', 'OLAP', 'ETL Processes', 'Data Mining'],
+#     'Financial Technology (FinTech)': ['Payments', 'Blockchain', 'Robo-advisors', 'InsurTech', 'RegTech'],
+#     'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
+#     'EdTech': ['Learning Management Systems', 'Online Education', 'eLearning Platforms', 'Educational Technology Tools', 'MOOCs'],
+#     'GovTech': ['Digital Transformation', 'Smart Cities', 'Civic Tech', 'Open Data', 'Government Analytics'],
+#     'AgTech': ['Precision Agriculture', 'Farm Management Software', 'AgriTech Startups', 'Vertical Farming', 'AgriTech Solutions'],
+#     'Space Tech': ['Satellite Technology', 'Space Exploration', 'Rocket Science', 'Spacecraft Design', 'Astronautics'],
+#     'Green Tech': ['Renewable Energy', 'Sustainability', 'Environmental Monitoring', 'CleanTech', 'Green Building'],
+#     'MarTech': ['Marketing Automation', 'Digital Marketing Analytics', 'Customer Relationship Management (CRM)', 'Content Management Systems', 'SEO'],
+#     'InsurTech': ['Digital Insurance Platforms', 'Claims Processing Automation', 'Underwriting Automation', 'Insurance Analytics', 'InsurTech Startups'],
+#     'Retail Tech': ['E-commerce Platforms', 'Point-of-Sale Systems', 'Supply Chain Management', 'Retail Analytics', 'Omni-channel Retailing'],
+#     'HR Tech': ['Human Resource Information Systems (HRIS)', 'Talent Acquisition Software', 'Employee Engagement Platforms', 'Performance Management Systems', 'HR Analytics'],
+#     'Legal Tech': ['Legal Research', 'Contract Management', 'eDiscovery', 'Document Automation', 'Case Management'],
+#     'AdTech': ['Programmatic Advertising', 'Ad Exchange Platforms', 'Ad Fraud Detection', 'Ad Targeting', 'Data Management Platforms'],
+#     'Logistics Tech': ['Supply Chain Optimization', 'Fleet Management Systems', 'Last-Mile Delivery Solutions', 'Warehouse Management Systems', 'Freight Forwarding Software'],
+#     'Food Tech': ['Food Delivery Platforms', 'Restaurant Management Software', 'Food Safety Technology', 'AgriTech Solutions', 'Food Analytics'],
+#     'Sports Tech': ['Sports Analytics', 'Fitness Tracking Apps', 'Athlete Performance Management', 'Sports Biomechanics', 'eSports Platforms'],
+#     'Travel Tech': ['Online Travel Agencies', 'Travel Management Software', 'Booking Platforms', 'Travel Expense Management', 'Hospitality Tech'],
+#     'Telecom Tech': ['5G Networks', 'Fiber Optics', 'Mobile Infrastructure', 'Telecom Software', 'Network Security'],
+#     'Entertainment Tech': ['Streaming Platforms', 'Gaming Consoles', 'Music Streaming Services', 'Video Production Tools', 'Virtual Reality (VR)'],
+#     'Media Tech': ['Digital Publishing Platforms', 'Content Management Systems', 'Media Analytics', 'Broadcasting Technology', 'Media Distribution'],
+#     'Fashion Tech': ['Virtual Try-On', 'Fashion E-commerce Platforms', 'AR Fashion Apps', 'Fashion Data Analytics', 'Sustainable Fashion Tech'],
+#     'Real Estate Tech': ['Property Management Software', 'Real Estate Marketplaces', 'VR Property Tours', 'Real Estate CRM', 'Automated Valuation Models'],
+#     'Health Tech': ['Telemedicine Platforms', 'Health Data Analytics', 'Medical Imaging AI', 'Patient Management Software', 'Health Wearables'],
+#     'Construction Tech': ['Building Information Modeling (BIM)', 'Construction Management Software', 'Drones in Construction', 'IoT in Construction', 'Prefabrication Technology'],
+#     'Energy Tech': ['Smart Grids', 'Renewable Energy Technology', 'Energy Storage Solutions', 'Energy Management Systems', 'Microgrid Technology']}
+
+
+
+
+# def extract_text_from_pdf(file_binary):
+#     text = ''
+#     pdf_reader = PyPDF2.PdfFileReader(BytesIO(file_binary))
+#     for page_num in range(pdf_reader.numPages):
+#         text += pdf_reader.getPage(page_num).extract_text()
+#     return text
+
+# def extract_text_from_docx(file_binary):
+#     doc = docx.Document(BytesIO(file_binary))
+#     text = ''
+#     for para in doc.paragraphs:
+#         text += para.text
+#     return text
+
+
+# def extract_phone_number(text):
+#     phone_regex = r'[\+\(]?[1-9][0-9 .\-\(\)]{8,}[0-9]'
+#     phone_matches = re.findall(phone_regex, text)
+#     return phone_matches[-1].strip() if phone_matches else "No phone number found"
+
+# def extract_name(text):
+#     lines = text.split('\n')
+#     name_words = []
+
+#     for line in lines[:5]:
+#         if re.search(r'\b(phone|email)\b', line, re.IGNORECASE):
+#             continue
+        
+#         # Extract potential name words
+#         words = re.findall(r'\b[A-Za-z]+', line)
+#         name_words.extend(words)
+
+#         if len(name_words) >= 2:
+#             return ' '.join(name_words[:3]).rstrip('.,')
+
+#     return "No name found"
+
+# def extract_email(text):
+#     email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+#     email_matches = re.findall(email_regex, text)
+#     return email_matches[-1].rstrip('.,') if email_matches else "No email found"
+
+
+# # New functions for extracting candidate details
+# # def extract_phone_number(text):
+# #     phone_regex = r'\b\d{10}\b'
+# #     phone_matches = re.findall(phone_regex, text)
+# #     return phone_matches[-1] if phone_matches else "No phone number found"
+
+# # def extract_name(text):
+# #     lines = text.split('\n')
+# #     name_words = []  # List to store the words of the name
+    
+# #     # Regular expressions to identify lines that are likely contact details
+# #     phone_pattern = re.compile(r'\b(\+?\d[\d\-\.\s]+)?\d{10}\b')
+# #     email_pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
+    
+# #     for line in lines[:5]:  # Look at the first five lines where the name is likely to appear
+# #         # Skip lines that are likely to be contact details
+# #         if phone_pattern.search(line) or email_pattern.search(line):
+# #             continue
+        
+# #         # Remove common salutations and titles
+# #         cleaned_line = re.sub(r'\b(Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam)\b', '', line, flags=re.IGNORECASE).strip()
+        
+# #         # Extract names with up to three words
+# #         words = cleaned_line.split()
+# #         name_words.extend(words)  # Add words from the current line to the list
+        
+# #         if len(name_words) <= 2:
+# #             continue  # Continue accumulating words if we have less than or equal to three words
+# #         else:
+# #             # Stop accumulating if we exceed three words and return the concatenated name
+# #             return ' '.join(word.capitalize() for word in name_words[:3]).rstrip('.,')
+    
+# #     # Return the concatenated name if found within the first five lines
+# #     if name_words:
+# #         return ' '.join(word.capitalize() for word in name_words[:3]).rstrip('.,')
+    
+# #     return "No name found"
+
+# # def extract_email(text):
+# #     email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+# #     email_matches = re.findall(email_regex, text)
+# #     return email_matches[-1].rstrip('.,') if email_matches else "No email found"
+
+
+# def extract_text_from_docx1(file_binary):
+#     """
+#     Extract text from a DOCX file.
+    
+#     Parameters:
+#         file (BytesIO): DOCX file-like object.
+    
+#     Returns:
+#         str: Extracted text.
+#     """
+#     text = ""
+#     try:
+#         doc = Document(file)
+#         for paragraph in doc.paragraphs:
+#             text += paragraph.text + '\n'
+#     except Exception as e:
+#         print(f"Error extracting text from DOCX: {e}")
+#     return text
+
+# def extract_text_from_resume(file_binary):
+#     try:
+#         return extract_text_from_pdf(file_binary)
+#     except PyPDF2.utils.PdfReadError:
+#         pass
+    
+#     try:
+#         return extract_text_from_docx(file_binary)
+#     except Exception:
+#         raise ValueError("Unsupported file format")
+
+# def preprocess_text(text):
+#     text = re.sub(r'\W+', ' ', text).lower().strip()
+#     return text
+
+# def generate_sub_skills(skill):
+#     return sub_categories.get(skill.strip(), [])
+
+# def combine_skills_with_sub_categories(skills):
+#     combined_skills = set()
+#     for skill in skills:
+#         combined_skills.add(skill.strip())
+#         combined_skills.update(generate_sub_skills(skill.strip()))  # Include sub-skills
+#     return list(combined_skills)
+
+# def extract_skills_from_resume(resume_text, skills_list):
+#     resume_text = preprocess_text(resume_text)
+#     skills_found = set()
+    
+#     for skill in skills_list:
+#         skill_lower = skill.lower()
+        
+#         # Check direct match
+#         if re.search(r'\b' + re.escape(skill_lower) + r'\b', resume_text, re.IGNORECASE):
+#             skills_found.add(skill)
+#             continue
+        
+#         # Check sub-categories
+#         sub_skills = generate_sub_skills(skill)
+#         for sub_skill in sub_skills:
+#             sub_skill_lower = sub_skill.lower()
+#             if re.search(r'\b' + re.escape(sub_skill_lower) + r'\b', resume_text, re.IGNORECASE):
+#                 skills_found.add(sub_skill)
+#                 break
+        
+#         # Check key match and add sub-category skills
+#         if skill_lower in sub_categories:
+#             skills_found.update(sub_categories[skill_lower])
+    
+#     return list(skills_found)
+
+
+
+# def calculate_skill_match_percentage(matched_skills, skills):
+#     if not skills:
+#         return 0
+    
+#     if all(skill in matched_skills for skill in skills):
+#         return 100.0
+#     else:
+#         return (len(matched_skills) / len(skills)) * 100
+
+# # def extract_skills_from_resume(resume_text, skills_list):
+# #     resume_text = preprocess_text(resume_text)
+# #     skills_found = set()
+
+# #     for skill in skills_list:
+# #         skill_lower = skill.lower()
+        
+# #         # Check direct match for complete words with word boundaries and case insensitivity
+# #         if re.search(r'\b' + re.escape(skill_lower) + r'\b', resume_text, re.IGNORECASE):
+# #             skills_found.add(skill)
+# #             continue
+        
+# #         # Check sub-categories
+# #         sub_skills = generate_sub_skills(skill)
+# #         for sub_skill in sub_skills:
+# #             sub_skill_lower = sub_skill.lower()
+# #             if re.search(r'\b' + re.escape(sub_skill_lower) + r'\b', resume_text, re.IGNORECASE):
+# #                 skills_found.add(sub_skill)  # Add sub-skill instead of the main skill
+# #                 break
+        
+# #         # Optionally, you can also check for exact matches without word boundaries as a fallback
+# #         # if skill_lower in resume_text.lower():
+# #         #     skills_found.add(skill)
+    
+# #     return list(skills_found)
+
+
+
+# # def calculate_skill_match_percentage(matched_skills, skills):
+# #     if not skills:
+# #         return 0
+    
+# #     # Normalize skills to lowercase for comparison
+# #     normalized_matched_skills = {skill.lower() for skill in matched_skills}
+# #     normalized_skills = {skill.lower() for skill in skills}
+    
+# #     if normalized_skills.intersection(normalized_matched_skills) == normalized_skills:
+# #         return 100.0
+# #     else:
+# #         return (len(normalized_matched_skills) / len(normalized_skills)) * 100
+
+
+
+# def get_job_details(job_id):
+#     # Assuming JobPost model and retrieval function as defined earlier
+#     job_post = JobPost.query.filter_by(id=job_id).first()
+#     if not job_post:
+#         return None
+#     job_details = {
+#         'client': job_post.client,
+#         'detailed_jd': job_post.detailed_jd if job_post.detailed_jd else "",
+#         'skills': job_post.skills.split(', ') if job_post.skills else [],  # Split skills into a list
+#         'experience_min': job_post.experience_min,
+#         'experience_max': job_post.experience_max
+#     }
+#     return job_details
+
+
+  
+
+# def extract_experience_from_resume(resume_text):
+#     # Define patterns to match experience in years and months
+#     experience_pattern_1 = r'(\d+(\.\d+)?)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*(?:month|months|mo|mos)?'
+#     experience_pattern_2 = r'(\d+)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*months?'
+#     experience_pattern_3 = r'(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)?'
+#     experience_pattern_4 = r'(\d+(\.\d+)?)\s*(?:-year)'
+#     experience_pattern_5 = r'Demonstrated\s+(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)'
+#     experience_pattern_6 = r'(\d+(\.\d+)?)\s*(?:years|yr|yrs)?\s*of\s*experience'  # New pattern for "7.5 years of experience"
+#     experience_pattern_7 = r'(\d+(\.\d+)?)\s*years?\s*of\s*(?:IT|technical)?\s*experience'  # New pattern for "6.3 years of IT experience"
+
+#     # Define a pattern to identify internship-related terms
+#     internship_pattern = r'\binternship\b|\bintern\b'
+
+#     # Define pattern to match phone numbers
+#     phone_pattern = re.compile(r'\b(\+?\d[\d\-\.\s]+)?\d{10}\b')
+
+#     # Search for the internship pattern in the resume text
+#     internship_match = re.search(internship_pattern, resume_text, re.IGNORECASE)
+
+#     # If internship pattern is found, return 0 indicating no experience
+#     if internship_match:
+#         return 0
+
+#     # Exclude phone numbers from the experience search
+#     resume_text_no_phone = phone_pattern.sub('', resume_text)
+
+#     # Search for experience patterns
+#     patterns = [
+#         experience_pattern_1,
+#         experience_pattern_2,
+#         experience_pattern_3,
+#         experience_pattern_4,
+#         experience_pattern_5,
+#         experience_pattern_6,  # Include the new pattern in the search
+#         experience_pattern_7   # Include the new pattern for "6.3 years of IT experience"
+#     ]
+    
+#     for pattern in patterns:
+#         match = re.search(pattern, resume_text_no_phone, re.IGNORECASE)
+#         if match:
+#             years = float(match.group(1))
+#             months = int(match.group(3) or 0) if len(match.groups()) > 2 else 0
+#             total_months = int(years * 12) + months
+#             if total_months < 600:  # Assuming 50 years of experience as a reasonable upper limit
+#                 return total_months
+
+#     return 0  # Return 0 if no valid experience pattern is found or exceeds reasonable limit
+
+# def extract_experience_from_dates(resume_text):
+#     current_year = datetime.now().year
+    
+#     date_pattern = r'(\b\d{4}\b)[\s-]*(Present|\b\d{4}\b)'
+#     date_matches = re.findall(date_pattern, resume_text, re.IGNORECASE)
+    
+#     total_experience_months = 0
+#     experience_periods = []
+
+#     for start_year, end_year in date_matches:
+#         try:
+#             start_year = int(start_year)
+#             end_year = current_year if end_year.lower() == 'present' else int(end_year)
+            
+#             if start_year <= end_year:
+#                 experience_periods.append((start_year, end_year))
+#         except ValueError:
+#             continue  # Skip invalid date ranges
+
+#     # Merge overlapping periods and sum the total experience in months
+#     merged_periods = merge_periods(experience_periods)
+#     total_experience_months = sum((end - start + 1) * 12 for start, end in merged_periods)
+
+#     return total_experience_months
+
+# def merge_periods(periods):
+#     # Sort periods by start year
+#     periods.sort(key=lambda x: x[0])
+    
+#     merged = []
+#     for current in periods:
+#         if not merged:
+#             merged.append(current)
+#         else:
+#             last = merged[-1]
+#             if current[0] <= last[1]:  # Overlapping or contiguous
+#                 merged[-1] = (last[0], max(last[1], current[1]))
+#             else:
+#                 merged.append(current)
+#     return merged
+
+# @app.route('/check_resume_match', methods=['POST'])
+# def check_resume_match():
+#     data = request.json
+#     job_id = data.get('job_id')
+#     user_id = data.get('user_id')
+#     candidate_experience_str = data.get('candidate_experence')  # Fetch candidate experience as a string
+#     print("candidate_experience_str: ",candidate_experience_str)
+#     if 'resume' not in data:
+#         return jsonify({'error': 'No resume provided in the request'}), 400
+
+#     try:
+#         resume_binary = base64.b64decode(data['resume'])
+#     except Exception as e:
+#         return jsonify({'error': f'Error decoding base64 resume: {str(e)}'}), 400
+
+#     try:
+#         resume_text = extract_text_from_resume(resume_binary)
+#         resume_text = extract_text_from_docx1(resume_binary)
+#     except ValueError as e:
+#         return jsonify({'error': str(e)}), 400
+
+#     # Extract candidate details
+#     candidate_name = extract_name(resume_text)
+#     candidate_phone = extract_phone_number(resume_text)
+#     candidate_email = extract_email(resume_text)
+
+#     job_details = get_job_details(job_id)
+#     if not job_details:
+#         return jsonify({'error': 'Job details not found'}), 404
+    
+#     combined_skills = job_details['skills']
+#     matched_skills = extract_skills_from_resume(resume_text, combined_skills)
+#     skill_match_percentage = calculate_skill_match_percentage(matched_skills, job_details['skills'])
+
+#     # Convert candidate_experience_str to float or int if possible, or fallback to None
+#     if candidate_experience_str is not None and candidate_experience_str.strip():  # Check if not None and not empty
+#         try:
+#             candidate_experience = float(candidate_experience_str)
+#         except ValueError:
+#             candidate_experience = None
+#     else:
+#         candidate_experience = None
+    
+#     # Calculate candidate experience only if candidate_experience is None or not provided
+#     if candidate_experience is None or candidate_experience == 0.0:
+#         print("resume_text :",resume_text)
+#         candidate_experience_months = extract_experience_from_resume(resume_text)
+#         candidate_experience_years = candidate_experience_months / 12
+#         candidate_experience_formatted = f"{math.floor(candidate_experience_years)}.{candidate_experience_months % 12}"
+#     else:
+#         candidate_experience_months = int(float(candidate_experience) * 12)  # Convert years to months
+#         candidate_experience_years = candidate_experience_months / 12
+#         candidate_experience_formatted = f"{math.floor(candidate_experience_years)}.{candidate_experience_months % 12}"
+
+#     experience_min_months = int(float(job_details['experience_min']) * 12)
+#     experience_max_months = int(float(job_details['experience_max']) * 12)
+
+#     # if candidate_experience_months >= experience_min_months and candidate_experience_months <= experience_max_months:
+#     #     experience_match_percentage = 100
+#     #     experience_unmatch_percentage = 0
+#     # else:
+#     #     if candidate_experience_months < experience_min_months:
+#     #         experience_match_percentage = (candidate_experience_months / experience_min_months) * 100
+#     #         experience_unmatch_percentage = 100 - experience_match_percentage
+#     #     elif candidate_experience_months > experience_max_months:
+#     #         experience_match_percentage = (experience_max_months / candidate_experience_months) * 100
+#     #         experience_unmatch_percentage = 100 - experience_match_percentage
+
+
+#     # if candidate_experience_months >= experience_min_months and candidate_experience_months <= experience_max_months:
+#     #     experience_match_percentage = 100
+#     #     experience_unmatch_percentage = 0
+#     # elif candidate_experience_months < experience_min_months:
+#     #     experience_match_percentage = (candidate_experience_months / experience_min_months) * 100
+#     #     experience_unmatch_percentage = 100 - experience_match_percentage
+#     # else:  # candidate_experience_months > experience_max_months
+#     #     # Adjust the calculation to properly reflect the mismatch percentage
+#     #     experience_match_percentage = (experience_max_months / candidate_experience_months) * 100
+#     #     experience_unmatch_percentage = 100 - experience_match_percentage
+#     if candidate_experience_months >= experience_min_months and candidate_experience_months <= experience_max_months:
+#         experience_match_percentage = 100
+#         experience_unmatch_percentage = 0
+#     elif candidate_experience_months > experience_max_months:
+#         experience_match_percentage = 100
+#         experience_unmatch_percentage = 0
+#     else:
+#         if candidate_experience_months < experience_min_months:
+#             experience_match_percentage = (candidate_experience_months / experience_min_months) * 100
+#             experience_unmatch_percentage = 100 - experience_match_percentage
+#         elif candidate_experience_months > experience_max_months:
+#             experience_match_percentage = (experience_max_months / candidate_experience_months) * 100
+#             experience_unmatch_percentage = 100 - experience_match_percentage
+#     overall_match_percentage = (skill_match_percentage + experience_match_percentage) / 2
+
+#     response_data = {
+#         'client': job_details['client'],
+#         'detailed_jd': job_details['detailed_jd'],
+#         'experience_min': job_details['experience_min'],
+#         'experience_max': job_details['experience_max'],
+#         'skills': job_details['skills'],
+#         'skill_match_percentage': skill_match_percentage,
+#         'experience_match_percentage': experience_match_percentage,
+#         'experience_unmatch_percentage': experience_unmatch_percentage,
+#         'overall_match_percentage': overall_match_percentage,
+#         'matched_skills': matched_skills,
+#         'resume_skills': matched_skills,
+#         'user_id': user_id,
+#         'job_id': job_id,
+#         'candidate_experience': candidate_experience_formatted,
+#         'candidate_name' : candidate_name,
+#         'candidate_phone' : candidate_phone,
+#         'candidate_email' : candidate_email
+#     }
+
+#     return jsonify(response_data), 200
 
 ####################################################################################
 
