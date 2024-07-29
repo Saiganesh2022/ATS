@@ -1673,8 +1673,8 @@ For each role, provide the following details in the array format (no responsibil
     """
 
     candidate_learning = f"""
-Analyze {pdf_text}. Please provide the technologies used and any certifications mentioned in the {pdf_text}, organized by each company he has worked for.
-
+# Analyze {pdf_text}. Please provide the technologies used and any certifications mentioned in the {pdf_text}, organized by each company he has worked for.
+Analyze {pdf_text}. Please provide the technologies used, any certifications mentioned, and the working periods organized by each company he has worked for, including the total experience duration at each company. Please ensure that the response remains consistent every time this prompt is used and do not modify the values each time:
 *Example Arrays*:
 - *Company Names*: ["World Pay India", "EPAM Systems India", "Global Logic", "Collabrera Technologies"]
 - *Technologies Used*: {{
