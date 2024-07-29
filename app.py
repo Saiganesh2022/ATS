@@ -997,6 +997,25 @@ def extract_email(text):
 #     return email_matches[-1].rstrip('.,') if email_matches else "No email found"
 
 
+def extract_text_from_docx1(file_binary):
+    """
+    Extract text from a DOCX file.
+    
+    Parameters:
+        file (BytesIO): DOCX file-like object.
+    
+    Returns:
+        str: Extracted text.
+    """
+    text = ""
+    try:
+        doc = Document(file)
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + '\n'
+    except Exception as e:
+        print(f"Error extracting text from DOCX: {e}")
+    return text
+
 def extract_text_from_resume(file_binary):
     try:
         return extract_text_from_pdf(file_binary)
@@ -1225,6 +1244,7 @@ def check_resume_match():
 
     try:
         resume_text = extract_text_from_resume(resume_binary)
+        resume_text = extract_text_from_docx1(resume_binary)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
 
