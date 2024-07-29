@@ -12120,7 +12120,7 @@ from sqlalchemy import func, text,case
 from sqlalchemy.sql import text 
 from sqlalchemy import text
 import pandas as pd  # Import pandas for date_range
-import matplotlib.pyplot as plt
+
 from io import BytesIO
 import base64
 
