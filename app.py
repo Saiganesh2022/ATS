@@ -1345,6 +1345,27 @@ def check_resume_match():
 
 ####################################################################################
 
+
+def extract_text_from_docx2(pdf_base64):
+    """
+    Extract text from a DOCX file.
+    
+    Parameters:
+        file (BytesIO): DOCX file-like object.
+    
+    Returns:
+        str: Extracted text.
+    """
+    text = ""
+    try:
+        doc = Document(file)
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + '\n'
+    except Exception as e:
+        print(f"Error extracting text from DOCX: {e}")
+    return text
+
+
 def get_job_details_candidate(job_id):
     job_post = JobPost.query.filter_by(id=job_id).first()
     if not job_post:
@@ -1554,12 +1575,53 @@ def parse_expertise_text(text):
     return result
 
 
+# def convert_to_array(candidate_learning_text):
+#     # Initialize dictionaries and lists to store parsed data
+#     company_names = []
+#     technologies_used = {}
+#     certifications = []
+#     skills_domain = []
+
+#     # Extract Company Names
+#     company_names_match = re.search(r"Company Names:\s*\[(.*?)\]", candidate_learning_text)
+#     if company_names_match:
+#         company_names = [name.strip() for name in company_names_match.group(1).split(",")]
+
+#     # Extract Technologies Used
+#     techs_match = re.search(r"Technologies Used:\s*\{(.*?)\}", candidate_learning_text, re.DOTALL)
+#     if techs_match:
+#         techs_text = techs_match.group(1).strip()
+#         # Use regex to handle multiple entries in the technologies section
+#         techs_entries = re.findall(r'(\w.+?): \[([^\]]+)\]', techs_text)
+#         for company, techs in techs_entries:
+#             technologies_used[company.strip()] = [tech.strip() for tech in techs.split(",")]
+
+#     # Extract Certifications
+#     certs_match = re.search(r"Certifications:\s*\[(.*?)\]", candidate_learning_text)
+#     if certs_match:
+#         certifications = [cert.strip() for cert in certs_match.group(1).split(",") if cert.strip()]
+
+#     # Extract Skills/Domain
+#     skills_match = re.search(r"Skills/Domain:\s*\[(.*?)\]", candidate_learning_text)
+#     if skills_match:
+#         skills_domain = [skill.strip() for skill in skills_match.group(1).split(",") if skill.strip()]
+
+#     return {
+#         "Company Names": company_names,
+#         "Technologies Used": technologies_used,
+#         "Certifications": certifications,
+#         "Skills/Domain": skills_domain
+#     }
+
+
+
 def convert_to_array(candidate_learning_text):
     # Initialize dictionaries and lists to store parsed data
     company_names = []
     technologies_used = {}
     certifications = []
     skills_domain = []
+    working_periods = {}
 
     # Extract Company Names
     company_names_match = re.search(r"Company Names:\s*\[(.*?)\]", candidate_learning_text)
@@ -1570,8 +1632,7 @@ def convert_to_array(candidate_learning_text):
     techs_match = re.search(r"Technologies Used:\s*\{(.*?)\}", candidate_learning_text, re.DOTALL)
     if techs_match:
         techs_text = techs_match.group(1).strip()
-        # Use regex to handle multiple entries in the technologies section
-        techs_entries = re.findall(r'(\w.+?): \[([^\]]+)\]', techs_text)
+        techs_entries = re.findall(r'([\w\s]+): \[([^\]]+)\]', techs_text)
         for company, techs in techs_entries:
             technologies_used[company.strip()] = [tech.strip() for tech in techs.split(",")]
 
@@ -1585,15 +1646,21 @@ def convert_to_array(candidate_learning_text):
     if skills_match:
         skills_domain = [skill.strip() for skill in skills_match.group(1).split(",") if skill.strip()]
 
+    # Extract Working Periods and Calculate Duration
+    periods_match = re.search(r"Working Periods:\s*\{(.*?)\}", candidate_learning_text, re.DOTALL)
+    if periods_match:
+        periods_text = periods_match.group(1).strip()
+        periods_entries = re.findall(r'([\w\s]+): \{from_date: ([^,]+), to_date: ([^,]+), duration: ([^}]+)\}', periods_text)
+        for company, from_date, to_date, duration in periods_entries:
+            working_periods[company.strip()] = {"from": from_date.strip(), "to": to_date.strip(), "duration": duration.strip()}
+
     return {
         "Company Names": company_names,
         "Technologies Used": technologies_used,
         "Certifications": certifications,
-        "Skills/Domain": skills_domain
+        "Skills/Domain": skills_domain,
+        "Working Periods": working_periods
     }
-
-
-
 
 
 @app.route('/candidate_over_view', methods=['POST'])
@@ -1610,6 +1677,7 @@ def candidate_over_view():
     try:
         # Decode the base64 PDF file
         pdf_bytes = base64.b64decode(pdf_base64)
+        
     except Exception as e:
         return jsonify({"error": "Failed to decode base64 PDF"}), 400
 
@@ -1672,9 +1740,26 @@ For each role, provide the following details in the array format (no responsibil
 ]
     """
 
+#     candidate_learning = f"""
+# # Analyze {pdf_text}. Please provide the technologies used and any certifications mentioned in the {pdf_text}, organized by each company he has worked for.
+# Analyze {pdf_text}. Please provide the technologies used, any certifications mentioned, and the working periods organized by each company he has worked for, including the total experience duration at each company. Please ensure that the response remains consistent every time this prompt is used and do not modify the values each time:
+# *Example Arrays*:
+# - *Company Names*: ["World Pay India", "EPAM Systems India", "Global Logic", "Collabrera Technologies"]
+# - *Technologies Used*: {{
+#     "World Pay India": ["Java", "Spring Framework", "Spring Boot", ...],
+#     "EPAM Systems India": ["Java", "Spring Boot", "Hibernate", ...],
+#     "Global Logic": ["Java", "Spring Boot", "Hibernate", ...],
+#     "Collabrera Technologies": ["Java", "Spring Boot", "Hibernate", ...]
+# }}
+# - *Certifications*: [" ", " ", ...]
+# - *Skills/Domain*: ["Core Java", "Spring Framework", "Spring Boot", ...]
+
+# Please ensure each section is detailed and well-organized for clarity, with a specific focus on differentiating the technologies used by each company. Only provide the array responses without any theoretical explanations.
+#     """
+
     candidate_learning = f"""
-# Analyze {pdf_text}. Please provide the technologies used and any certifications mentioned in the {pdf_text}, organized by each company he has worked for.
-Analyze {pdf_text}. Please provide the technologies used, any certifications mentioned, and the working periods organized by each company he has worked for, including the total experience duration at each company. Please ensure that the response remains consistent every time this prompt is used and do not modify the values each time:
+       Analyze {pdf_text}. Please provide the technologies used, any certifications mentioned, and the working periods organized by each company he has worked for, including the total experience duration at each company. Please ensure that the response remains consistent every time this prompt is used and do not modify the values each time:
+    here technologies take from  (Environment or Tools and Technologies) 
 *Example Arrays*:
 - *Company Names*: ["World Pay India", "EPAM Systems India", "Global Logic", "Collabrera Technologies"]
 - *Technologies Used*: {{
@@ -1682,12 +1767,18 @@ Analyze {pdf_text}. Please provide the technologies used, any certifications men
     "EPAM Systems India": ["Java", "Spring Boot", "Hibernate", ...],
     "Global Logic": ["Java", "Spring Boot", "Hibernate", ...],
     "Collabrera Technologies": ["Java", "Spring Boot", "Hibernate", ...]
-}}
-- *Certifications*: [" ", " ", ...]
+  }}
+- *Certifications*: [" Java Full Stack Development Certification From Jspiders ", " ", ...]
 - *Skills/Domain*: ["Core Java", "Spring Framework", "Spring Boot", ...]
+- *Working Periods*: {{
+    "World Pay India": {{"from_date": "", "to_date": "" , "duration": "X years Y months"}},
+    "EPAM Systems India": {{"from_date": "", "to_date": "" , "duration": "X years Y months"}},
+    "Global Logic": {{"from_date": "", "to_date": ""  "duration": "X years Y months"}},
+    "Collabrera Technologies": {{"from_date": "", "to_date": "" , "duration": "X years Y months"}}
+  }}
 
 Please ensure each section is detailed and well-organized for clarity, with a specific focus on differentiating the technologies used by each company. Only provide the array responses without any theoretical explanations.
-    """
+"""
 
     Analyze_candidate_profile = f"""
 Analyze the candidate profile using this {job_details} and {pdf_text}.
