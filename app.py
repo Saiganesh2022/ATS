@@ -1694,6 +1694,58 @@ def format_analyze_candidate_profile(text):
     
 
 
+# def format_job_info_text(text):
+#     # Find the dictionary-like substring within curly braces
+#     match = re.search(r"\{.*\}", text, re.DOTALL)
+#     if match:
+#         # Get the matched string and replace single quotes with double quotes for JSON parsing
+#         response_dict_str = match.group(0).replace("'", "\"")
+#         try:
+#             # Parse the JSON string into a Python dictionary
+#             response_dict = json.loads(response_dict_str)
+#         except json.JSONDecodeError as e:
+#             print(f"Error parsing response dictionary: {e}")
+#             return []
+
+#         # Extract data from the dictionary, providing default empty string values
+#         candidate = response_dict.get('Candidate', [''])[0]
+#         job_desc_skills = response_dict.get('Job Description skills', [''])
+#         job_desc_skills_count = response_dict.get('Job Description skills count', [0])[0]
+#         resume_skills = response_dict.get('Resume skills', [''])
+#         resume_skills_count = response_dict.get('Resume skills count', [0])[0]
+#         matching_skills = response_dict.get('Matching skills', [''])
+#         experience = response_dict.get('Candidate Experience', [''])[0]
+#         experience_percentage = response_dict.get('Candidate Experience percentage', [''])[0]
+#         skills_percentage = response_dict.get('Skills matching percentage', [''])[0]
+#         job_desc_exp = response_dict.get('Job Description experience', [''])[0]
+#         job_desc_package = response_dict.get('Job Description package (LPA)', [''])[0]
+#         candidate_min_budget = response_dict.get('Candidate_min_budget', [''])[0]
+#         candidate_max_budget = response_dict.get('Candidate_max_budget', [''])[0]
+
+#         # Create a formatted result as a list of dictionaries
+#         result = [{
+#             "Candidate": candidate,
+#             "Job Description Skills": job_desc_skills,
+#             "Job Description Skills Count": job_desc_skills_count,
+#             "Resume Skills": resume_skills,
+#             "Resume Skills Count": resume_skills_count,
+#             "Matching Skills": matching_skills,
+#             "Candidate Experience": experience,
+#             "Candidate Experience Percentage": experience_percentage,
+#             "Skills Matching Percentage": skills_percentage,
+#             "Job Description Experience": job_desc_exp,
+#             "Job Description Package (LPA)": job_desc_package,
+#             "Candidate Minimum Budget": candidate_min_budget,
+#             "Candidate Maximum Budget": candidate_max_budget
+#         }]
+
+#         print("Formatted result:", result)
+#         return result
+#     else:
+#         print("No matching pattern found in the response text.")
+#         return []
+
+
 def format_job_info_text(text):
     # Find the dictionary-like substring within curly braces
     match = re.search(r"\{.*\}", text, re.DOTALL)
@@ -1709,34 +1761,34 @@ def format_job_info_text(text):
 
         # Extract data from the dictionary, providing default empty string values
         candidate = response_dict.get('Candidate', [''])[0]
-        job_desc_skills = response_dict.get('Job Description skills', [''])
-        job_desc_skills_count = response_dict.get('Job Description skills count', [0])[0]
-        resume_skills = response_dict.get('Resume skills', [''])
-        resume_skills_count = response_dict.get('Resume skills count', [0])[0]
-        matching_skills = response_dict.get('Matching skills', [''])
         experience = response_dict.get('Candidate Experience', [''])[0]
-        experience_percentage = response_dict.get('Candidate Experience percentage', [''])[0]
-        skills_percentage = response_dict.get('Skills matching percentage', [''])[0]
-        job_desc_exp = response_dict.get('Job Description experience', [''])[0]
-        job_desc_package = response_dict.get('Job Description package (LPA)', [''])[0]
-        candidate_min_budget = response_dict.get('Candidate_min_budget', [''])[0]
-        candidate_max_budget = response_dict.get('Candidate_max_budget', [''])[0]
+        experience_percentage = response_dict.get('Candidate Experience Percentage', [''])[0]
+        min_budget = response_dict.get('Candidate Minimum Budget', [''])[0]
+        max_budget = response_dict.get('Candidate Maximum Budget', [''])[0]
+        job_desc_exp = response_dict.get('Job Description Experience', [''])[0]
+        job_desc_package = response_dict.get('Job Description Package (LPA)', [''])[0]
+        job_desc_skills = response_dict.get('Job Description Skills', [''])
+        job_desc_skills_count = response_dict.get('Job Description Skills Count', [''])[0]
+        matching_skills = response_dict.get('Matching Skills', [''])
+        resume_skills = response_dict.get('Resume Skills', [''])
+        resume_skills_count = response_dict.get('Resume Skills Count', [''])[0]
+        skills_percentage = response_dict.get('Skills Matching Percentage', [''])[0]
 
         # Create a formatted result as a list of dictionaries
         result = [{
             "Candidate": candidate,
-            "Job Description Skills": job_desc_skills,
-            "Job Description Skills Count": job_desc_skills_count,
-            "Resume Skills": resume_skills,
-            "Resume Skills Count": resume_skills_count,
-            "Matching Skills": matching_skills,
             "Candidate Experience": experience,
             "Candidate Experience Percentage": experience_percentage,
-            "Skills Matching Percentage": skills_percentage,
+            "Candidate Minimum Budget": min_budget,
+            "Candidate Maximum Budget": max_budget,
             "Job Description Experience": job_desc_exp,
             "Job Description Package (LPA)": job_desc_package,
-            "Candidate Minimum Budget": candidate_min_budget,
-            "Candidate Maximum Budget": candidate_max_budget
+            "Job Description Skills": job_desc_skills,
+            "Job Description Skills Count": job_desc_skills_count,
+            "Matching Skills": matching_skills,
+            "Resume Skills": resume_skills,
+            "Resume Skills Count": resume_skills_count,
+            "Skills Matching Percentage": skills_percentage
         }]
 
         print("Formatted result:", result)
@@ -1744,7 +1796,6 @@ def format_job_info_text(text):
     else:
         print("No matching pattern found in the response text.")
         return []
-
 
 
 def parse_career_progress(text):
@@ -2005,6 +2056,42 @@ The response should be structured with categories and counts as specified.
 # }}
 #     """
 
+#     job_info_prompt = f"""
+# Analyze the following {pdf_text} and {job_details}. Provide the details in the format below with no **Explanation** or theoretical content.
+
+# Output format:
+
+# categories = {{
+#     'Candidate': ['Candidate Name'],
+#     'Job Description skills': ['List of skills required in the job description'],
+#     'Job Description skills count': [Total number of skills mentioned in the job description],
+#     'Resume skills': ['Technical skills mentioned in the resume'],
+#     'Resume skills count': [Total number of skills mentioned in the resume],
+#     'Matching skills': ['List of skills that match between the job description and resume'],
+#     'Candidate Experience': ['Total experience in years. If the candidate has only completed internships, show 0 years experience'],
+#     'Candidate Experience percentage': ['Calculated as described below'],
+#     'Skills matching percentage': ['(Number of matching skills / Total number of job description skills) * 100'],
+#     'Job Description experience': ['Experience required as per the job description'],
+#     'Job Description package (LPA)': ['Package details mentioned in the job description'],
+#     'Candidate_min_budget': ['Minimum budget for the candidate based on experience matching percentage and skills matching percentage, calculated as described below'],
+#     'Candidate_max_budget': ['Maximum budget for the candidate based on experience matching percentage and skills matching percentage, calculated as described below']
+# }}
+
+# Candidate Experience percentage calculations:
+# - If the candidate's experience matches or exceeds the job description’s max_experience, consider it as 100%.
+# - If the candidate's experience is below min_experience, calculate the percentage as:
+#   - (Candidate experience / min_experience) * 100
+# - If the candidate's experience falls between min_experience and max_experience, consider it as 100%.
+
+# Skills matching percentage calculation:
+# - (Number of matching skills / Total number of job description skills) * 100
+# - Ensure that this percentage does not exceed 100%.
+
+# Budget calculations:
+# - **Candidate_min_budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package))
+# - **Candidate_max_budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package)) + ((experience_matching_percentage / 100) * (max_package - min_package))
+# """
+
     job_info_prompt = f"""
 Analyze the following {pdf_text} and {job_details}. Provide the details in the format below with no **Explanation** or theoretical content.
 
@@ -2012,34 +2099,45 @@ Output format:
 
 categories = {{
     'Candidate': ['Candidate Name'],
-    'Job Description skills': ['List of skills required in the job description'],
-    'Job Description skills count': [Total number of skills mentioned in the job description],
-    'Resume skills': ['Technical skills mentioned in the resume'],
-    'Resume skills count': [Total number of skills mentioned in the resume],
-    'Matching skills': ['List of skills that match between the job description and resume'],
-    'Candidate Experience': ['Total experience in years. If the candidate has only completed internships, show 0 years experience'],
-    'Candidate Experience percentage': ['Calculated as described below'],
-    'Skills matching percentage': ['(Number of matching skills / Total number of job description skills) * 100'],
-    'Job Description experience': ['Experience required as per the job description'],
-    'Job Description package (LPA)': ['Package details mentioned in the job description'],
-    'Candidate_min_budget': ['Minimum budget for the candidate based on experience matching percentage and skills matching percentage, calculated as described below'],
-    'Candidate_max_budget': ['Maximum budget for the candidate based on experience matching percentage and skills matching percentage, calculated as described below']
+    'Candidate Experience': ['Total experience in years'],
+    'Candidate Experience Percentage': ['Calculated as described below'],
+    'Candidate Minimum Budget': ['Calculated based on experience and skills if experience percentage is not 0'],
+    'Candidate Maximum Budget': ['Calculated based on experience and skills if experience percentage is not 0'],
+    'Job Description Experience': ['Experience range required'],
+    'Job Description Package (LPA)': ['Package range mentioned'],
+    'Job Description Skills': ['Skills required'],
+    'Job Description Skills Count': ['Number of required skills'],
+    'Matching Skills': ['Skills that match between job description and resume'],
+    'Resume Skills': ['Skills listed in the resume'],
+    'Resume Skills Count': ['Total number of skills listed'],
+    'Skills Matching Percentage': ['(Number of matching skills / Total number of job description skills) * 100']
 }}
 
-Candidate Experience percentage calculations:
-- If the candidate's experience matches or exceeds the job description’s max_experience, consider it as 100%.
-- If the candidate's experience is below min_experience, calculate the percentage as:
-  - (Candidate experience / min_experience) * 100
-- If the candidate's experience falls between min_experience and max_experience, consider it as 100%.
+Candidate Experience Percentage Calculation:
+- Extract the minimum and maximum values from the job description experience range (e.g., "3-5 years").
+- Convert these values to numbers (e.g., "3" and "5").
+- If the candidate's experience (e.g., 7.5) is greater than or equal to the minimum value (3) and less than or equal to the maximum value (5):
+  - Set the `Candidate Experience Percentage` to 100%.
+  - Proceed with budget calculations.
+- If the candidate's experience (e.g., 7.5) is less than the minimum value (3) or greater than the maximum value (5):
+  - Set the `Candidate Experience Percentage` to 0%.
+  - Do not provide the candidate's minimum and maximum budget both set as 0.
 
-Skills matching percentage calculation:
-- (Number of matching skills / Total number of job description skills) * 100
-- Ensure that this percentage does not exceed 100%.
+Skills Matching Percentage Calculation:
+- Calculate as (Number of matching skills / Total number of job description skills) * 100.
+- Ensure this percentage does not exceed 100%.
 
-Budget calculations:
-- **Candidate_min_budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package))
-- **Candidate_max_budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package)) + ((experience_matching_percentage / 100) * (max_package - min_package))
+Budget Calculations (only if `Candidate Experience Percentage` is not 0):
+- **Candidate Minimum Budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package))
+- **Candidate Maximum Budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package)) + ((experience_matching_percentage / 100) * (max_package - min_package))
+
+where:
+- **min_package** is the minimum package from the job description.
+- **max_package** is the maximum package from the job description.
+- **skills_matching_percentage** is the percentage based on matching skills.
+- **experience_matching_percentage** is 100% if the candidate’s experience falls within the job description range; otherwise, it is 0%.
 """
+
 
     carrer_progress = f"""
 Analyze the following {pdf_text} and provide a detailed overview of the candidate's career progress. Focus on the progression of job titles, the duration of each position, and notable achievements in each role. Highlight the candidate's growth and development over time, including roles, promotions, location of company, project title  and achievements. Discuss any patterns or significant milestones, such as shifts in industry, increasing levels of responsibility, or specialized expertise development.
