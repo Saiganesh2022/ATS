@@ -2114,20 +2114,20 @@ categories = {{
 }}
 
 Candidate Experience Percentage Calculation:
-- Extract the minimum and maximum values from the job description experience range (e.g., "3-5 years").
-- Convert these values to numbers (e.g., "3" and "5").
-- If the candidate's experience (e.g., 7.5) is greater than or equal to the minimum value (3) and less than or equal to the maximum value (5):
-  - Set the `Candidate Experience Percentage` to 100%.
+- Extract the minimum and maximum values from the job description experience range (e.g., "4.9-7 years").
+- Convert these values to numbers (e.g., "4.9" and "7").
+- If the candidate's experience is within this range:
+  - Set `Candidate Experience Percentage` to 100%.
   - Proceed with budget calculations.
-- If the candidate's experience (e.g., 7.5) is less than the minimum value (3) or greater than the maximum value (5):
-  - Set the `Candidate Experience Percentage` to 0%.
-  - Do not provide the candidate's minimum and maximum budget both set as 0.
+- If the candidate's experience is outside this range:
+  - Set `Candidate Experience Percentage` to 0%.
+  - Set both `Candidate Minimum Budget` and `Candidate Maximum Budget` to 0.
 
 Skills Matching Percentage Calculation:
-- Calculate as (Number of matching skills / Total number of job description skills) * 100.
-- Ensure this percentage does not exceed 100%.
+- Count the number of matching skills between the job description and resume.
+- Calculate as (Number of matching skills / Total number of job description skills) * 100, ensuring this percentage does not exceed 100%.
 
-Budget Calculations (only if `Candidate Experience Percentage` is not 0):
+Budget Calculations (if `Candidate Experience Percentage` is not 0):
 - **Candidate Minimum Budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package))
 - **Candidate Maximum Budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package)) + ((experience_matching_percentage / 100) * (max_package - min_package))
 
@@ -2136,6 +2136,7 @@ where:
 - **max_package** is the maximum package from the job description.
 - **skills_matching_percentage** is the percentage based on matching skills.
 - **experience_matching_percentage** is 100% if the candidate’s experience falls within the job description range; otherwise, it is 0%.
+
 """
 
 
