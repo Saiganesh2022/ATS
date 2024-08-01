@@ -2138,7 +2138,7 @@ categories = {{
     'Candidate Experience': ['Total experience in years'],
     'Candidate Experience Percentage': ['Calculated as described below'],
     'Candidate Minimum Budget': ['Calculated based on overall matching percentage'],
-    'Candidate Maximum Budget': ['Calculated based on overall matching percentage'],
+    'Candidate Maximum Budget': ['Calculated based on overall matching percentage'],s
     'Job Description Min Experience': ['Minimum experience required'],
     'Job Description Max Experience': ['Maximum experience required'],
     'Job Description Package (LPA)': ['Package range mentioned'],
