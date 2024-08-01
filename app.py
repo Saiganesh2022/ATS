@@ -2301,8 +2301,8 @@ This is the flow:
 
     # Configure and use Generative AI
     # api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
-    # api_key = "AIzaSyABp7NiK0EKISlDFq57qb9TKeXh8cm2M2o"
-    api_key = "AIzaSyDVMofXJ9iFFom9jQfWf8b79BVn_HJqOso"
+    api_key = "AIzaSyABp7NiK0EKISlDFq57qb9TKeXh8cm2M2o"
+    # api_key = "AIzaSyDVMofXJ9iFFom9jQfWf8b79BVn_HJqOso"
     if api_key is None:
         raise ValueError("API_KEY environment variable not set")
 
