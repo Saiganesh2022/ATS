@@ -1765,7 +1765,8 @@ def format_job_info_text(text):
         experience_percentage = response_dict.get('Candidate Experience Percentage', [''])[0]
         min_budget = response_dict.get('Candidate Minimum Budget', [''])[0]
         max_budget = response_dict.get('Candidate Maximum Budget', [''])[0]
-        job_desc_exp = response_dict.get('Job Description Experience', [''])[0]
+        min_job_desc_exp = response_dict.get('Job Description Min Experience', [''])[0]
+        max_job_desc_exp = response_dict.get('Job Description Max Experience', [''])[0]
         job_desc_package = response_dict.get('Job Description Package (LPA)', [''])[0]
         job_desc_skills = response_dict.get('Job Description Skills', [''])
         job_desc_skills_count = response_dict.get('Job Description Skills Count', [''])[0]
@@ -1781,7 +1782,8 @@ def format_job_info_text(text):
             "Candidate Experience Percentage": experience_percentage,
             "Candidate Minimum Budget": min_budget,
             "Candidate Maximum Budget": max_budget,
-            "Job Description Experience": job_desc_exp,
+            "Job Description Min Experience": min_job_desc_exp,
+            "Job Description Max Experience": max_job_desc_exp,
             "Job Description Package (LPA)": job_desc_package,
             "Job Description Skills": job_desc_skills,
             "Job Description Skills Count": job_desc_skills_count,
@@ -1796,6 +1798,7 @@ def format_job_info_text(text):
     else:
         print("No matching pattern found in the response text.")
         return []
+
 
 
 def parse_career_progress(text):
