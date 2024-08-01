@@ -2083,55 +2083,7 @@ def candidate_over_view():
 # The response should be structured with categories and counts as specified.
 # """
 
-#     job_info_prompt = f"""
-# "Analyze the following {pdf_text} and {job_details}. Provide the details in the format below with no theoretical explanations:
-# Output format:\n
-# categories ={{
-#     'Candidate': ['Candidate Name'],
-#     'Candidate Experience': ['Experience in years if candidate has done any internship then that period dont consider as experience'],
-#     'Skills matching percentage': ['(matching skills/total skills)*100'],
-#     'Job Description experience': ['Experience mentioned in Job Description'], 
-#     'Job Description package(LPA)': ['Package Details'],
-#     'candidate_min_budget': ['Minimum Budget in example 8 LPA for the candidate based on experience and skills'],
-#     'candidate_max_budget': ['Maximum Budget in example 10 LPA for the candidate based on experience and skills']
-# }}
-#     """
 
-#     job_info_prompt = f"""
-# Analyze the following {pdf_text} and {job_details}. Provide the details in the format below with no **Explanation** or theoretical content.
-
-# Output format:
-
-# categories = {{
-#     'Candidate': ['Candidate Name'],
-#     'Job Description skills': ['List of skills required in the job description'],
-#     'Job Description skills count': [Total number of skills mentioned in the job description],
-#     'Resume skills': ['Technical skills mentioned in the resume'],
-#     'Resume skills count': [Total number of skills mentioned in the resume],
-#     'Matching skills': ['List of skills that match between the job description and resume'],
-#     'Candidate Experience': ['Total experience in years. If the candidate has only completed internships, show 0 years experience'],
-#     'Candidate Experience percentage': ['Calculated as described below'],
-#     'Skills matching percentage': ['(Number of matching skills / Total number of job description skills) * 100'],
-#     'Job Description experience': ['Experience required as per the job description'],
-#     'Job Description package (LPA)': ['Package details mentioned in the job description'],
-#     'Candidate_min_budget': ['Minimum budget for the candidate based on experience matching percentage and skills matching percentage, calculated as described below'],
-#     'Candidate_max_budget': ['Maximum budget for the candidate based on experience matching percentage and skills matching percentage, calculated as described below']
-# }}
-
-# Candidate Experience percentage calculations:
-# - If the candidate's experience matches or exceeds the job description’s max_experience, consider it as 100%.
-# - If the candidate's experience is below min_experience, calculate the percentage as:
-#   - (Candidate experience / min_experience) * 100
-# - If the candidate's experience falls between min_experience and max_experience, consider it as 100%.
-
-# Skills matching percentage calculation:
-# - (Number of matching skills / Total number of job description skills) * 100
-# - Ensure that this percentage does not exceed 100%.
-
-# Budget calculations:
-# - **Candidate_min_budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package))
-# - **Candidate_max_budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package)) + ((experience_matching_percentage / 100) * (max_package - min_package))
-# """
 
 
     expertise_prompt = f"""
@@ -2172,7 +2124,6 @@ Each item in the Domains array should be an object with a single key-value pair 
 """
 
 
-
     
     job_info_prompt = f"""
 Analyze the following {pdf_text} and {job_details}. Provide the details in the format below with no **Explanation** or theoretical content.
@@ -2183,41 +2134,64 @@ categories = {{
     'Candidate': ['Candidate Name'],
     'Candidate Experience': ['Total experience in years'],
     'Candidate Experience Percentage': ['Calculated as described below'],
-    'Candidate Minimum Budget': ['Calculated based on experience and skills if experience percentage is not 0'],
-    'Candidate Maximum Budget': ['Calculated based on experience and skills if experience percentage is not 0'],
-    'Job Description Experience': ['Experience range required'],
+    'Candidate Minimum Budget': ['Calculated based on overall matching percentage'],
+    'Candidate Maximum Budget': ['Calculated based on overall matching percentage'],
+    'Job Description Min Experience': ['Minimum experience required'],
+    'Job Description Max Experience': ['Maximum experience required'],
     'Job Description Package (LPA)': ['Package range mentioned'],
     'Job Description Skills': ['Skills required'],
     'Job Description Skills Count': ['Number of required skills'],
-    'Matching Skills': ['Skills that match between job description and resume'],
+    'Matching Skills': ['Skills that match between {job_details} skills and {pdf_text} skills if {job_details} skills are not maching with {pdf_text} skills then check this {pdf_text} skills is under that {job_details} skills as a sub skills the compare if found then take as maching skill in some cases sunskiils present in the  {job_details} skills main skill present in the {pdf_text} skills chech this case also for maching skill '],
     'Resume Skills': ['Skills listed in the resume'],
     'Resume Skills Count': ['Total number of skills listed'],
     'Skills Matching Percentage': ['(Number of matching skills / Total number of job description skills) * 100']
 }}
 
 Candidate Experience Percentage Calculation:
-- Extract the minimum and maximum values from the job description experience range (e.g., "4.9-7 years").
-- Convert these values to numbers (e.g., "4.9" and "7").
-- If the candidate's experience is within this range:
-  - Set `Candidate Experience Percentage` to 100%.
+- Extract the minimum and maximum values from the job description experience range (e.g., "5-10 years").
+- Convert these values to numbers (e.g., "5" and "10").
+- If the candidate's experience falls within this range:
+  - Set Candidate Experience Percentage to 100%.
   - Proceed with budget calculations.
 - If the candidate's experience is outside this range:
-  - Set `Candidate Experience Percentage` to 0%.
-  - Set both `Candidate Minimum Budget` and `Candidate Maximum Budget` to 0.
+  - Set Candidate Experience Percentage to 0%.
+  - Set both Candidate Minimum Budget and Candidate Maximum Budget to 0.
 
 Skills Matching Percentage Calculation:
-- Count the number of matching skills between the job description and resume.
-- Calculate as (Number of matching skills / Total number of job description skills) * 100, ensuring this percentage does not exceed 100%.
+- Compare each skill from the job description with the skills listed in the resume.
+- Count the number of matching skills.
+- Calculate Skills Matching Percentage as (Number of matching skills / Total number of job description skills) * 100.
+- Ensure this percentage does not exceed 100%.
 
-Budget Calculations (if `Candidate Experience Percentage` is not 0):
-- **Candidate Minimum Budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package))
-- **Candidate Maximum Budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package)) + ((experience_matching_percentage / 100) * (max_package - min_package))
+Overall Matching Percentage Calculation:
+- Calculate Overall Matching Percentage as the average of Candidate Experience Percentage and Skills Matching Percentage.
+
+Budget Calculations (if Candidate Experience Percentage is 100%):
+- **Candidate Minimum Budget**: min_package + ((overall_matching_percentage / 100) * (max_package - min_package) * 0.5)
+- **Candidate Maximum Budget**: min_package + ((overall_matching_percentage / 100) * (max_package - min_package) * 1.5)
 
 where:
 - **min_package** is the minimum package from the job description.
 - **max_package** is the maximum package from the job description.
-- **skills_matching_percentage** is the percentage based on matching skills.
-- **experience_matching_percentage** is 100% if the candidate’s experience falls within the job description range; otherwise, it is 0%.
+- **overall_matching_percentage** is the average of Candidate Experience Percentage and Skills Matching Percentage.
+
+Example Calculations:
+Case 1: Experience within Range and Overall Matching Percentage
+Candidate Experience: 5.4 years
+Job Description Experience: 5-10 years
+Candidate Experience Percentage: 100%
+Skills Matching Percentage: 30%
+Overall Matching Percentage: 65%
+Candidate Minimum Budget: min_package + ((65 / 100) * (max_package - min_package) * 0.5)
+Candidate Maximum Budget: min_package + ((65 / 100) * (max_package - min_package) * 1.5)
+
+Case 2: Experience Outside Range
+Candidate Experience: 9 years
+Job Description Experience: 5-10 years
+Candidate Experience Percentage: 0%
+Skills Matching Percentage: 30%
+Candidate Minimum Budget: 0
+Candidate Maximum Budget: 0
 
 """
 
