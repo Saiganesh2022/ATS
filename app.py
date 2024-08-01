@@ -2134,7 +2134,7 @@ The response should be structured with categories and counts as specified.
 # """
 
 
-expertise_prompt = f"""
+    expertise_prompt = f"""
 Analyze this {pdf_text} and provide an accurate and detailed list of the candidate's areas of expertise. Include specific skills, technologies, programming languages, frameworks, tools, and domains where the candidate has demonstrated proficiency. Ensure the list is precise and comprehensive.
 
 Format the response as follows:
