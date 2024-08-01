@@ -1870,42 +1870,83 @@ def parse_career_progress(text):
 
 
 
-def parse_expertise_text(text):
-    # Define a pattern to extract categories and their items
-    pattern = r"categories\s*=\s*\{\s*(.*?)\s*\}"
-    match = re.search(pattern, text, re.DOTALL)
+# def parse_expertise_text(text):
+#     # Define a pattern to extract categories and their items
+#     pattern = r"categories\s*=\s*\{\s*(.*?)\s*\}"
+#     match = re.search(pattern, text, re.DOTALL)
     
-    if not match:
-        print("No matching pattern found in the expertise text.")
-        return []
+#     if not match:
+#         print("No matching pattern found in the expertise text.")
+#         return []
 
-    # Extract the categories section
-    categories_text = match.group(1)
+#     # Extract the categories section
+#     categories_text = match.group(1)
     
-    # Define a pattern to match each category
-    category_pattern = r"'([^']+)':\s*\[(.*?)\]"
-    categories = re.findall(category_pattern, categories_text, re.DOTALL)
+#     # Define a pattern to match each category
+#     category_pattern = r"'([^']+)':\s*\[(.*?)\]"
+#     categories = re.findall(category_pattern, categories_text, re.DOTALL)
     
-    result = []
+#     result = []
     
-    for category_name, items_text in categories:
-        # Extract individual items and count
-        items_pattern = r"'(.*?)'(?:,|$)"
-        items = re.findall(items_pattern, items_text)
+#     for category_name, items_text in categories:
+#         # Extract individual items and count
+#         items_pattern = r"'(.*?)'(?:,|$)"
+#         items = re.findall(items_pattern, items_text)
         
-        # Check for count
-        count_pattern = r"count:\s*(\d+)"
-        count_match = re.search(count_pattern, items_text)
-        count = count_match.group(1) if count_match else str(len(items))
+#         # Check for count
+#         count_pattern = r"count:\s*(\d+)"
+#         count_match = re.search(count_pattern, items_text)
+#         count = count_match.group(1) if count_match else str(len(items))
         
-        # Add category to result
-        result.append({
+#         # Add category to result
+#         result.append({
+#             "Category": category_name,
+#             "Items": items,
+#             "Count": count
+#         })
+    
+#     return result
+
+
+
+def parse_expertise_text(expertise_text):
+    # Define regex patterns for categories and domains
+    category_pattern = re.compile(r'(\w[\w\s]*?):\s*\[([^\]]*?)\s*,\s*count:\s*(\d+)\s*\]')
+    domain_pattern = re.compile(r'\{\s*([^\{\}:]+):\s*([^\}]+)\}', re.DOTALL)
+    
+    # Parse categories
+    categories = []
+    for match in category_pattern.finditer(expertise_text):
+        category_name = match.group(1).strip()
+        items_text = match.group(2).strip()
+        # count = match.group(3).strip()
+
+        items = [item.strip() for item in items_text.split(',') if item.strip()]
+        categories.append({
             "Category": category_name,
-            "Items": items,
-            "Count": count
+            "Items": items
         })
+
+    # Parse domains
+    domains = []
+    domain_section_pattern = re.compile(r'Domains:\s*\[(.*?)\]\s*}', re.DOTALL)
+    domain_section_match = domain_section_pattern.search(expertise_text)
     
-    return result
+    if domain_section_match:
+        domain_section = domain_section_match.group(1)
+        domain_matches = domain_pattern.findall(domain_section)
+        for match in domain_matches:
+            domain_name = match[0].strip()
+            description = match[1].strip()
+            domains.append({
+                "Domain": domain_name,
+                "Description": description
+            })
+
+    return {
+        "categories": categories,
+        "domains": domains
+    }
 
 
 # def convert_to_array(candidate_learning_text):
@@ -2092,52 +2133,93 @@ The response should be structured with categories and counts as specified.
 # - **Candidate_max_budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package)) + ((experience_matching_percentage / 100) * (max_package - min_package))
 # """
 
-    job_info_prompt = f"""
-Analyze the following {pdf_text} and {job_details}. Provide the details in the format below with no **Explanation** or theoretical content.
 
-Output format:
+expertise_prompt = f"""
+Analyze this {pdf_text} and provide an accurate and detailed list of the candidate's areas of expertise. Include specific skills, technologies, programming languages, frameworks, tools, and domains where the candidate has demonstrated proficiency. Ensure the list is precise and comprehensive.
 
-categories = {{
-    'Candidate': ['Candidate Name'],
-    'Candidate Experience': ['Total experience in years'],
-    'Candidate Experience Percentage': ['Calculated as described below'],
-    'Candidate Minimum Budget': ['Calculated based on experience and skills if experience percentage is not 0'],
-    'Candidate Maximum Budget': ['Calculated based on experience and skills if experience percentage is not 0'],
-    'Job Description Experience': ['Experience range required'],
-    'Job Description Package (LPA)': ['Package range mentioned'],
-    'Job Description Skills': ['Skills required'],
-    'Job Description Skills Count': ['Number of required skills'],
-    'Matching Skills': ['Skills that match between job description and resume'],
-    'Resume Skills': ['Skills listed in the resume'],
-    'Resume Skills Count': ['Total number of skills listed'],
-    'Skills Matching Percentage': ['(Number of matching skills / Total number of job description skills) * 100']
+Format the response as follows:
+{{
+  "categories": {{
+      "sub_category_1": [
+          "Topic1", "Topic2", "Topic3", "count: N"
+       ],
+      "sub_category_2": [
+          "Topic1", "Topic2", "count: N"
+       ],
+      ...
+   
+  "Domains": [
+    {{
+      "Domain 1": "Briefly describe the candidate's expertise in this domain, highlighting key skills and experience."
+    }},
+    {{
+      "Domain 2": "Briefly describe the candidate's expertise in this domain, highlighting key skills and experience."
+    }},
+    {{
+      "Domain 3": "Briefly describe the candidate's expertise in this domain, highlighting key skills and experience."
+    }},
+    {{
+      "Domain 4": "Briefly describe the candidate's expertise in this domain, highlighting key skills and experience."
+    }},
+    {{
+      "Domain 5": "Briefly describe the candidate's expertise in this domain, highlighting key skills and experience."
+    }}
+    // Add more domains as needed
+  ]
+  }},
 }}
-
-Candidate Experience Percentage Calculation:
-- Extract the minimum and maximum values from the job description experience range (e.g., "4.9-7 years").
-- Convert these values to numbers (e.g., "4.9" and "7").
-- If the candidate's experience is within this range:
-  - Set `Candidate Experience Percentage` to 100%.
-  - Proceed with budget calculations.
-- If the candidate's experience is outside this range:
-  - Set `Candidate Experience Percentage` to 0%.
-  - Set both `Candidate Minimum Budget` and `Candidate Maximum Budget` to 0.
-
-Skills Matching Percentage Calculation:
-- Count the number of matching skills between the job description and resume.
-- Calculate as (Number of matching skills / Total number of job description skills) * 100, ensuring this percentage does not exceed 100%.
-
-Budget Calculations (if `Candidate Experience Percentage` is not 0):
-- **Candidate Minimum Budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package))
-- **Candidate Maximum Budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package)) + ((experience_matching_percentage / 100) * (max_package - min_package))
-
-where:
-- **min_package** is the minimum package from the job description.
-- **max_package** is the maximum package from the job description.
-- **skills_matching_percentage** is the percentage based on matching skills.
-- **experience_matching_percentage** is 100% if the candidate’s experience falls within the job description range; otherwise, it is 0%.
-
+Each item in the Domains array should be an object with a single key-value pair where the key is the domain name and the value is a string description of the candidate's expertise in that domain. The descriptions should be clear and concise, summarizing the candidate's proficiency and experience in each domain.
 """
+
+
+
+    
+#     job_info_prompt = f"""
+# Analyze the following {pdf_text} and {job_details}. Provide the details in the format below with no **Explanation** or theoretical content.
+
+# Output format:
+
+# categories = {{
+#     'Candidate': ['Candidate Name'],
+#     'Candidate Experience': ['Total experience in years'],
+#     'Candidate Experience Percentage': ['Calculated as described below'],
+#     'Candidate Minimum Budget': ['Calculated based on experience and skills if experience percentage is not 0'],
+#     'Candidate Maximum Budget': ['Calculated based on experience and skills if experience percentage is not 0'],
+#     'Job Description Experience': ['Experience range required'],
+#     'Job Description Package (LPA)': ['Package range mentioned'],
+#     'Job Description Skills': ['Skills required'],
+#     'Job Description Skills Count': ['Number of required skills'],
+#     'Matching Skills': ['Skills that match between job description and resume'],
+#     'Resume Skills': ['Skills listed in the resume'],
+#     'Resume Skills Count': ['Total number of skills listed'],
+#     'Skills Matching Percentage': ['(Number of matching skills / Total number of job description skills) * 100']
+# }}
+
+# Candidate Experience Percentage Calculation:
+# - Extract the minimum and maximum values from the job description experience range (e.g., "4.9-7 years").
+# - Convert these values to numbers (e.g., "4.9" and "7").
+# - If the candidate's experience is within this range:
+#   - Set `Candidate Experience Percentage` to 100%.
+#   - Proceed with budget calculations.
+# - If the candidate's experience is outside this range:
+#   - Set `Candidate Experience Percentage` to 0%.
+#   - Set both `Candidate Minimum Budget` and `Candidate Maximum Budget` to 0.
+
+# Skills Matching Percentage Calculation:
+# - Count the number of matching skills between the job description and resume.
+# - Calculate as (Number of matching skills / Total number of job description skills) * 100, ensuring this percentage does not exceed 100%.
+
+# Budget Calculations (if `Candidate Experience Percentage` is not 0):
+# - **Candidate Minimum Budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package))
+# - **Candidate Maximum Budget**: min_package + ((skills_matching_percentage / 100) * (max_package - min_package)) + ((experience_matching_percentage / 100) * (max_package - min_package))
+
+# where:
+# - **min_package** is the minimum package from the job description.
+# - **max_package** is the maximum package from the job description.
+# - **skills_matching_percentage** is the percentage based on matching skills.
+# - **experience_matching_percentage** is 100% if the candidate’s experience falls within the job description range; otherwise, it is 0%.
+
+# """
 
 
     carrer_progress = f"""
