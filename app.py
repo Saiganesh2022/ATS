@@ -780,9 +780,9 @@ def check_resume_match():
     gemini_sub_skills = {skill: generate_sub_skills_from_gemini(skill) for skill in job_details['skills']}
     matched_skills = extract_skills_from_gemini_resume(resume_text, gemini_sub_skills)
     
-    print("Resume Text:", resume_text)  # Debug
-    print("Gemini Sub Skills:", gemini_sub_skills)  # Debug
-    print("Matched Skills:", matched_skills)  # Debug
+    # print("Resume Text:", resume_text)  # Debug
+    # print("Gemini Sub Skills:", gemini_sub_skills)  # Debug
+    # print("Matched Skills:", matched_skills)  # Debug
 
     skill_match_percentage = calculate_skill_match_percentage(matched_skills, job_details['skills'])
 
@@ -2169,13 +2169,13 @@ categories = {{
     'Candidate Experience': ['Total experience in years'],
     'Candidate Experience Percentage': ['Calculated as described below'],
     'Candidate Minimum Budget': ['Calculated based on overall matching percentage'],
-    'Candidate Maximum Budget': ['Calculated based on overall matching percentage'],s
+    'Candidate Maximum Budget': ['Calculated based on overall matching percentage'],
     'Job Description Min Experience': ['Minimum experience required'],
     'Job Description Max Experience': ['Maximum experience required'],
     'Job Description Package (LPA)': ['Package range mentioned'],
     'Job Description Skills': ['Skills required'],
     'Job Description Skills Count': ['Number of required skills'],
-    'Matching Skills': ['Skills that match between {job_details} skills and {pdf_text} skills if {job_details} skills are not maching with {pdf_text} skills then check this {pdf_text} skills is under that {job_details} skills as a sub skills the compare if found then take as maching skill in some cases sunskiils present in the  {job_details} skills main skill present in the {pdf_text} skills chech this case also for maching skill '],
+    'Matching Skills': ['Skills that match between job description skills and resume skills, considering sub-skills and main skills as explained below'],
     'Resume Skills': ['Skills listed in the resume'],
     'Resume Skills Count': ['Total number of skills listed'],
     'Skills Matching Percentage': ['(Number of matching skills / Total number of job description skills) * 100']
@@ -2194,6 +2194,9 @@ Candidate Experience Percentage Calculation:
 Skills Matching Percentage Calculation:
 - Compare each skill from the job description with the skills listed in the resume.
 - Count the number of matching skills.
+- Consider sub-skills and main skills for matching:
+  - If a job description skill matches a sub-skill in the resume, count it as a match.
+  - If a resume skill matches a main skill in the job description, count it as a match.
 - Calculate Skills Matching Percentage as (Number of matching skills / Total number of job description skills) * 100.
 - Ensure this percentage does not exceed 100%.
 
@@ -2362,7 +2365,7 @@ This is the flow:
     try:
         Analyze_candidate_profile_text = getattr(Analyze_candidate_profile_response, 'text', '')
     except ValueError as e:
-        print(f"Error accessing response text: {e}")
+        # print(f"Error accessing response text: {e}")
         return jsonify({"error": "Failed to access Analyze Candidate Profile response text"}), 500
 
     formatted_expertise_text = clean_response(expertise_text)
