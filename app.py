@@ -2040,6 +2040,37 @@ def convert_to_array(candidate_learning_text):
     }
 
 
+def convert_to_array_textual_representation(candidate_learning_text):
+    # Initialize dictionaries and lists to store parsed data
+    bullet_points = {}
+    summary_paragraph = ""
+    tags = []
+
+    # Extract Bullet Points
+    bullet_points_match = re.search(r"BulletPoints:\s*\{(.*?)\}", candidate_learning_text, re.DOTALL)
+    if bullet_points_match:
+        bullet_points_text = bullet_points_match.group(1).strip()
+        bullet_points_entries = re.findall(r'BulletPoint\d+:\s*(.*?)(?:,|$)', bullet_points_text, re.DOTALL)
+        for idx, point in enumerate(bullet_points_entries):
+            bullet_points[f"BulletPoint{idx + 1}"] = point.strip()
+
+    # Extract Summary Paragraph
+    summary_paragraph_match = re.search(r"SummaryParagraph:\s*(.*?)(?:,|$)", candidate_learning_text, re.DOTALL)
+    if summary_paragraph_match:
+        summary_paragraph = summary_paragraph_match.group(1).strip()
+
+    # Extract Tags
+    tags_match = re.search(r"Tags:\s*\[(.*?)\]", candidate_learning_text)
+    if tags_match:
+        tags = [tag.strip() for tag in tags_match.group(1).split(",") if tag.strip()]
+
+    return {
+        "BulletPoints": bullet_points,
+        "SummaryParagraph": summary_paragraph,
+        "Tags": tags
+    }
+
+
 @app.route('/candidate_over_view', methods=['POST'])
 def candidate_over_view():
     data = request.json
@@ -2256,6 +2287,29 @@ For each role, provide the following details in the array format (no responsibil
 Please ensure each section is detailed and well-organized for clarity, with a specific focus on differentiating the technologies used by each company. Only provide the array responses without any theoretical explanations.
 """
 
+    candidate_learning_textual_representation = f"""
+Analyze {pdf_text} and provide a high-level summary of the candidate's learning attitude. Focus on indications of the candidate's openness to learning new things, such as certifications, courses, new technologies adopted, or any other learning initiatives mentioned. Ensure the response is concise and adaptable to various resume formats.
+
+Format the response as follows:
+{{
+    "BulletPoints": {{
+        "BulletPoint1": "Description of learning activity 1.",
+        "BulletPoint2": "Description of learning activity 2.",
+        "BulletPoint3": "Description of learning activity 3.",
+        "BulletPoint4": "Description of learning activity 4.",
+        "BulletPoint5": "Description of learning activity 5."
+    }},
+    "SummaryParagraph": "Brief paragraph summarizing the candidate's learning attitude.",
+    "Tags": [
+        "Tag1",
+        "Tag2",
+        "Tag3",
+        "Tag4",
+        "Tag5"
+    ]
+}}
+"""
+
     Analyze_candidate_profile = f"""
 Analyze the candidate profile using this {job_details} and {pdf_text}.
 This is the flow:
@@ -2292,6 +2346,7 @@ This is the flow:
         job_info_response = model.generate_content(job_info_prompt)
         carrer_progress_response = model.generate_content(carrer_progress)
         candidate_learning_response = model.generate_content(candidate_learning)
+        candidate_learning_textual_representation_response = model.generate_content(candidate_learning_textual_representation)
         Analyze_candidate_profile_response = model.generate_content(Analyze_candidate_profile)
     except Exception as e:
         return jsonify({"error": "Failed to generate content using Generative AI"}), 500
@@ -2301,6 +2356,7 @@ This is the flow:
     job_info_text = getattr(job_info_response, 'text', '')
     carrer_progress_text = getattr(carrer_progress_response, 'text', '')
     candidate_learning_text = getattr(candidate_learning_response, 'text', '')
+    candidate_learning_textual_representation_text = getattr(candidate_learning_textual_representation_response, 'text', '')
     
     # Check if response text is valid and not blocked
     try:
@@ -2313,12 +2369,15 @@ This is the flow:
     formatted_job_info_text = clean_response(job_info_text)
     formatted_career_progress_text = clean_response(carrer_progress_text)
     formatted_candidate_learning_text = clean_response(candidate_learning_text)
+    formatted_candidate_learning_textual_representation_text_clean = clean_response(candidate_learning_textual_representation_text)
+
 
     formatted_Analyze_candidate_profile_text = format_analyze_candidate_profile(Analyze_candidate_profile_text)
     formatted_job_info_text = format_job_info_text(formatted_job_info_text)
     formatted_career_progress_text = parse_career_progress(formatted_career_progress_text)
     formatted_expertise_text = parse_expertise_text(formatted_expertise_text)
     formatted_candidate_learning_text = convert_to_array(formatted_candidate_learning_text)
+    formatted_candidate_learning_textual_representation_text = convert_to_array_textual_representation(formatted_candidate_learning_textual_representation_text_clean)
 
     response_data = {
         'user_id': user_id,
@@ -2326,6 +2385,7 @@ This is the flow:
         'job_info_response': formatted_job_info_text,
         'career_progress_response': formatted_career_progress_text,
         'candidate_learning_response': formatted_candidate_learning_text,
+        'candidate_learning_textual_representation':formatted_candidate_learning_textual_representation_text,
         'analyze_candidate_profile_response': formatted_Analyze_candidate_profile_text
     }
 
