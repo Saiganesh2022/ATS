@@ -297,7 +297,8 @@ class JobPost(db.Model):
     data_updated_time = db.Column(db.Time)
     jd_pdf_present = db.Column(db.Boolean, default=False)
     # jd_pdf_present = db.Column(db.Boolean, default=True)
-    def __init__(self, client, experience_min, experience_max, budget_min, budget_max, location, shift_timings, notice_period, role, detailed_jd, mode, recruiter, management, job_status, job_type, skills, jd_pdf, jd_pdf_present,contract_in_months):
+    no_of_positions = db.Column(db.String(100))
+    def __init__(self, client, experience_min, experience_max, budget_min, budget_max, location, shift_timings, notice_period, role, detailed_jd, mode, recruiter, management, job_status, job_type, skills, jd_pdf, jd_pdf_present,contract_in_months, no_of_positions):
         self.client = client
         self.experience_min = experience_min
         self.experience_max = experience_max
@@ -317,6 +318,7 @@ class JobPost(db.Model):
         self.jd_pdf = jd_pdf
         self.contract_in_months = contract_in_months
         self.jd_pdf_present = jd_pdf_present
+        self.no_of_positions = no_of_positions
 
 class Deletedcandidate(db.Model):
     _tablename_ = 'deletedcandidate'
@@ -8491,6 +8493,7 @@ def post_job():
             'job_status': data['job_status'],
             'skills': data['skills'],
             'job_type': data['Job_Type'],
+            'no_of_positions': data['no_of_positions'],
             'contract_in_months': data['Job_Type_details'] if data['Job_Type'] == 'Contract' else None
         }
     except KeyError as e:
@@ -8526,7 +8529,8 @@ def post_job():
         skills=job_details['skills'],
         contract_in_months=job_details['contract_in_months'],
         jd_pdf=jd_binary,
-        jd_pdf_present=jd_pdf_present
+        jd_pdf_present=jd_pdf_present,
+        no_of_positions=job_details['no_of_positions']
     )
 
     try:
