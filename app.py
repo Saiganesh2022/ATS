@@ -1746,6 +1746,61 @@ def format_analyze_candidate_profile(text):
 #         return []
 
 
+# def format_job_info_text(text):
+#     # Find the dictionary-like substring within curly braces
+#     match = re.search(r"\{.*\}", text, re.DOTALL)
+#     if match:
+#         # Get the matched string and replace single quotes with double quotes for JSON parsing
+#         response_dict_str = match.group(0).replace("'", "\"")
+#         try:
+#             # Parse the JSON string into a Python dictionary
+#             response_dict = json.loads(response_dict_str)
+#         except json.JSONDecodeError as e:
+#             print(f"Error parsing response dictionary: {e}")
+#             return []
+
+#         # Extract data from the dictionary, providing default empty string values
+#         candidate = response_dict.get('Candidate', [''])[0]
+#         experience = response_dict.get('Candidate Experience', [''])[0]
+#         experience_percentage = response_dict.get('Candidate Experience Percentage', [''])[0]
+#         min_budget = response_dict.get('Candidate Minimum Budget', [''])[0]
+#         max_budget = response_dict.get('Candidate Maximum Budget', [''])[0]
+#         min_job_desc_exp = response_dict.get('Job Description Min Experience', [''])[0]
+#         max_job_desc_exp = response_dict.get('Job Description Max Experience', [''])[0]
+#         job_desc_package = response_dict.get('Job Description Package (LPA)', [''])[0]
+#         job_desc_skills = response_dict.get('Job Description Skills', [''])
+#         job_desc_skills_count = response_dict.get('Job Description Skills Count', [''])[0]
+#         matching_skills = response_dict.get('Matching Skills', [''])
+#         resume_skills = response_dict.get('Resume Skills', [''])
+#         resume_skills_count = response_dict.get('Resume Skills Count', [''])[0]
+#         skills_percentage = response_dict.get('Skills Matching Percentage', [''])[0]
+
+#         # Create a formatted result as a list of dictionaries
+#         result = [{
+#             "Candidate": candidate,
+#             "Candidate Experience": experience,
+#             "Candidate Experience Percentage": experience_percentage,
+#             "Candidate Minimum Budget": min_budget,
+#             "Candidate Maximum Budget": max_budget,
+#             "Job Description Min Experience": min_job_desc_exp,
+#             "Job Description Max Experience": max_job_desc_exp,
+#             "Job Description Package (LPA)": job_desc_package,
+#             "Job Description Skills": job_desc_skills,
+#             "Job Description Skills Count": job_desc_skills_count,
+#             "Matching Skills": matching_skills,
+#             "Resume Skills": resume_skills,
+#             "Resume Skills Count": resume_skills_count,
+#             "Skills Matching Percentage": skills_percentage
+#         }]
+
+#         print("Formatted result:", result)
+#         return result
+#     else:
+#         print("No matching pattern found in the response text.")
+#         return []
+
+
+
 def format_job_info_text(text):
     # Find the dictionary-like substring within curly braces
     match = re.search(r"\{.*\}", text, re.DOTALL)
@@ -1767,11 +1822,12 @@ def format_job_info_text(text):
         max_budget = response_dict.get('Candidate Maximum Budget', [''])[0]
         min_job_desc_exp = response_dict.get('Job Description Min Experience', [''])[0]
         max_job_desc_exp = response_dict.get('Job Description Max Experience', [''])[0]
-        job_desc_package = response_dict.get('Job Description Package (LPA)', [''])[0]
-        job_desc_skills = response_dict.get('Job Description Skills', [''])
+        min_job_desc_package = response_dict.get('Job Description Min Package (LPA)', [''])[0]
+        max_job_desc_package = response_dict.get('Job Description Max Package (LPA)', [''])[0]
+        job_desc_skills = response_dict.get('Job Description Skills', [])
         job_desc_skills_count = response_dict.get('Job Description Skills Count', [''])[0]
-        matching_skills = response_dict.get('Matching Skills', [''])
-        resume_skills = response_dict.get('Resume Skills', [''])
+        matching_skills = response_dict.get('Matching Skills', [])
+        resume_skills = response_dict.get('Resume Skills', [])
         resume_skills_count = response_dict.get('Resume Skills Count', [''])[0]
         skills_percentage = response_dict.get('Skills Matching Percentage', [''])[0]
 
@@ -1784,7 +1840,8 @@ def format_job_info_text(text):
             "Candidate Maximum Budget": max_budget,
             "Job Description Min Experience": min_job_desc_exp,
             "Job Description Max Experience": max_job_desc_exp,
-            "Job Description Package (LPA)": job_desc_package,
+            "Job Description Min Package (LPA)": min_job_desc_package,
+            "Job Description Max Package (LPA)": max_job_desc_package,
             "Job Description Skills": job_desc_skills,
             "Job Description Skills Count": job_desc_skills_count,
             "Matching Skills": matching_skills,
@@ -1798,8 +1855,6 @@ def format_job_info_text(text):
     else:
         print("No matching pattern found in the response text.")
         return []
-
-
 
 def parse_career_progress(text):
     # Define patterns for matching work experience details
@@ -2172,7 +2227,9 @@ categories = {{
     'Candidate Maximum Budget': ['Calculated based on overall matching percentage'],
     'Job Description Min Experience': ['Minimum experience required'],
     'Job Description Max Experience': ['Maximum experience required'],
-    'Job Description Package (LPA)': ['Package range mentioned'],
+    # 'Job Description Package (LPA)': ['Package range mentioned'],
+    'Job Description Min Package (LPA)': ['Minimum Package mentioned'],
+    'Job Description Max Package (LPA)': ['Maximum Package mentioned'],
     'Job Description Skills': ['Skills required'],
     'Job Description Skills Count': ['Number of required skills'],
     'Matching Skills': ['Skills that match between job description skills and resume skills, considering sub-skills and main skills as explained below'],
