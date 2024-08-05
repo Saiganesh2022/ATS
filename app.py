@@ -10378,7 +10378,8 @@ def view_all_jobs():
                 "time_created": job_post.time_created.strftime('%H:%M:%S') if job_post.time_created else None,
                 "data_updated_date": job_post.data_updated_date.isoformat() if job_post.data_updated_date else None,
                 "data_updated_time": job_post.data_updated_time.strftime('%H:%M:%S') if job_post.data_updated_time else None,
-                "jd_pdf_present": job_post.jd_pdf_present  # Added line
+                "jd_pdf_present": job_post.jd_pdf_present,  # Added line
+                "no_of_positions":job_post.no_of_positions
             }
             for job_post in job_posts_active
         ],
@@ -10411,7 +10412,8 @@ def view_all_jobs():
                 "time_created": job_post.time_created.strftime('%H:%M:%S') if job_post.time_created else None,
                 "data_updated_date": job_post.data_updated_date.isoformat() if job_post.data_updated_date else None,
                 "data_updated_time": job_post.data_updated_time.strftime('%H:%M:%S') if job_post.data_updated_time else None,
-                "jd_pdf_present": job_post.jd_pdf_present  # Added line
+                "jd_pdf_present": job_post.jd_pdf_present,  # Added line
+                 "no_of_positions":job_post.no_of_positions
             }
             for job_post in job_posts_hold
         ]
