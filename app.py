@@ -7146,7 +7146,16 @@ def update_candidate(candidate_id):
     candidate.data_updated_date = current_datetime.date()
     candidate.data_updated_time = current_datetime.time()
 
+    # If candidate is on-boarded, decrement the job post's no_of_position count
+    if candidate_status == "ON-BOARDED":
+        job_post = JobPost.query.filter_by(id=candidate.job_id).first()
+        if job_post and job_post.no_of_position > 0:
+            job_post.no_of_position -= 1
+            db.session.commit()
+
     db.session.commit()
+
+    # db.session.commit
 
     if candidate_status in [
             "SCREENING", "SCREEN REJECTED", "NO SHOW", "DROP", "CANDIDATE HOLD", "OFFERED - DECLINED", "DUPLICATE", "SCREENING SELECTED",
@@ -13849,6 +13858,7 @@ def edit_job_post(job_post_id):
                     job_post.mode = data.get('mode', job_post.mode)
                     job_post.job_status = data.get('job_status', job_post.job_status)
                     job_post.skills = data.get('skills', job_post.skills)
+                    job_post.no_of_positions = data.get('no_of_positions', job_post.no_of_positions)
                     
                     recruiters = data.get('recruiter', job_post.recruiter)
                     recruiters = set(recruiters if isinstance(recruiters, list) else [recruiters])
