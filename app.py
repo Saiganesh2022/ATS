@@ -4896,8 +4896,8 @@ def dashboard():
             )\
             .all()
 
-        for candidate in candidates:
-            print(f"Candidate ID: {candidate.id}, Time Created: {candidate.time_created}")
+        # for candidate in candidates:
+        #     print(f"Candidate ID: {candidate.id}, Time Created: {candidate.time_created}")
 
         jobs_query = JobPost.query.filter(
             or_(*[JobPost.recruiter.like(f"%{recruiter}%") for recruiter in recruiters])
@@ -4979,7 +4979,8 @@ def dashboard():
                 'notification': job.notification,
                 'data_updated_date': job.data_updated_date.isoformat() if job.data_updated_date else None,
                 'data_updated_time': job.data_updated_time.strftime('%H:%M:%S') if job.data_updated_time else None,
-                'jd_pdf_present': job.jd_pdf_present
+                'jd_pdf_present': job.jd_pdf_present,
+                'no_of_positions' :job.no_of_positions
             } for job in jobs],
             'edit_candidate_message': edit_candidate_message,
             'page_no': page_no,
@@ -5006,8 +5007,8 @@ def dashboard():
             )\
             .all()
 
-        for candidate in candidates:
-            print(f"Candidate ID: {candidate.id}, Time Created: {candidate.time_created}")
+        # for candidate in candidates:
+        #     print(f"Candidate ID: {candidate.id}, Time Created: {candidate.time_created}")
 
         jobs = JobPost.query.all()
         
@@ -5084,7 +5085,8 @@ def dashboard():
                 'notification': job.notification,
                 'data_updated_date': job.data_updated_date.isoformat() if job.data_updated_date else None,
                 'data_updated_time': job.data_updated_time.strftime('%H:%M:%S') if job.data_updated_time else None,
-                'jd_pdf_present': job.jd_pdf_present
+                'jd_pdf_present': job.jd_pdf_present,
+                 'no_of_positions' :job.no_of_positions
             } for job in jobs],
             'signup_message': signup_message,
             'job_message': job_message,
@@ -5101,8 +5103,8 @@ def dashboard():
             )\
             .all()
 
-        for candidate in candidates:
-            print(f"Candidate ID: {candidate.id}, Time Created: {candidate.time_created}")
+        # for candidate in candidates:
+        #     print(f"Candidate ID: {candidate.id}, Time Created: {candidate.time_created}")
         
         response_data = {
             'user': {
