@@ -3360,7 +3360,7 @@ def recruiter_login():
                         'user_id': user.id,
                         'username': user.username,
                         'name': user.name,
-                        'email': user.email
+                        'email':user.email
                     })
                 else:
                     message = 'Your account is not verified yet. Please check your email for the verification link.'
@@ -3379,7 +3379,6 @@ def recruiter_login():
         'session_timeout_msg': session_timeout_msg,
         'password_message': password_message
     })
-
 
 
 import hashlib
