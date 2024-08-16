@@ -3359,7 +3359,8 @@ def recruiter_login():
                         'redirect': url_for('dashboard'),
                         'user_id': user.id,
                         'username': user.username,
-                        'name': user.name
+                        'name': user.name,
+                        'email': user.email
                     })
                 else:
                     message = 'Your account is not verified yet. Please check your email for the verification link.'
