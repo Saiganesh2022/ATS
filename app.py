@@ -355,6 +355,124 @@ class Notification(db.Model):
 
 ###################################################################################################
 
+
+from flask import Flask, request, jsonify
+import requests
+import json
+from msal import ConfidentialClientApplication
+
+app = Flask(__name__)
+
+# Your app credentials
+TENANT_ID = '8a7c6498-6635-4dbc-8a5e-f38efccfef3e'
+CLIENT_ID = '7ba39e41-0ec7-411d-8649-6607574db5f9'
+CLIENT_SECRET = '2ET8Q~TkfssfstnbCWmFP2U24phkklo_w080uc7E'
+AUTHORITY = f'https://login.microsoftonline.com/{TENANT_ID}'
+SCOPES = ['https://graph.microsoft.com/.default']
+GRAPH_ENDPOINT = 'https://graph.microsoft.com/v1.0'
+
+# Initialize MSAL ConfidentialClientApplication
+msal_app = ConfidentialClientApplication(
+    CLIENT_ID,
+    authority=AUTHORITY,
+    client_credential=CLIENT_SECRET,
+)
+
+# Function to acquire access token
+# def get_access_token():
+#     result = msal_app.acquire_token_for_client(scopes=SCOPES)
+#     if "access_token" in result:
+#         return result["access_token"]
+#     else:
+#         print("Failed to obtain access token:", result.get("error_description"))
+#         return None
+
+def create_event(subject, start_date, start_time, end_date, end_time, attendees, recruiter_email, time_zone):
+    # access_token = get_access_token()
+    access_token ="eyJ0eXAiOiJKV1QiLCJub25jZSI6IlA0VXNFbld1Uk5PUUJWLXFNNjY1eUJFWlJBeGljdnFNZ1hhQ3hxR1lRN3MiLCJhbGciOiJSUzI1NiIsIng1dCI6IktRMnRBY3JFN2xCYVZWR0JtYzVGb2JnZEpvNCIsImtpZCI6IktRMnRBY3JFN2xCYVZWR0JtYzVGb2JnZEpvNCJ9.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTAwMDAtYzAwMC0wMDAwMDAwMDAwMDAiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC84YTdjNjQ5OC02NjM1LTRkYmMtOGE1ZS1mMzhlZmNjZmVmM2UvIiwiaWF0IjoxNzIzODAwODk3LCJuYmYiOjE3MjM4MDA4OTcsImV4cCI6MTcyMzg4NzU5OCwiYWNjdCI6MCwiYWNyIjoiMSIsImFpbyI6IkFUUUF5LzhYQUFBQUxyVUZlTUVzUGhEdmd1UHNvL2ZMdUpPZTlUS3U5V3dXa0F4R0ZYRDRhbnNLYWkrNUZ3U0ZMZ1pDRnRMUWRjNW4iLCJhbXIiOlsicHdkIl0sImFwcF9kaXNwbGF5bmFtZSI6IkdyYXBoIEV4cGxvcmVyIiwiYXBwaWQiOiJkZThiYzhiNS1kOWY5LTQ4YjEtYThhZC1iNzQ4ZGE3MjUwNjQiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6IksiLCJnaXZlbl9uYW1lIjoicGF2YW4iLCJpZHR5cCI6InVzZXIiLCJpcGFkZHIiOiIxMTkuODIuMTIyLjIyMSIsIm5hbWUiOiJwYXZhbiIsIm9pZCI6IjZmODM2YWJjLTlmYzMtNDExYS1hNTAyLTJjMjMyOTI2OWY2MiIsInBsYXRmIjoiMyIsInB1aWQiOiIxMDAzMjAwMzQzODBDRTk1IiwicmgiOiIwLkFTc0FtR1I4aWpWbXZFMktYdk9PX01fdlBnTUFBQUFBQUFBQXdBQUFBQUFBQUFBckFMOC4iLCJzY3AiOiJDYWxlbmRhcnMuUmVhZCBDYWxlbmRhcnMuUmVhZC5TaGFyZWQgQ2FsZW5kYXJzLlJlYWRCYXNpYyBDYWxlbmRhcnMuUmVhZFdyaXRlIG9wZW5pZCBwcm9maWxlIFVzZXIuUmVhZCBlbWFpbCIsInN1YiI6ImhhVmIxXzJDUmM1dl8wRU5hNnh2T2hTR2pWMDRXNERQMWhLOWN4MVZQYlkiLCJ0ZW5hbnRfcmVnaW9uX3Njb3BlIjoiQVMiLCJ0aWQiOiI4YTdjNjQ5OC02NjM1LTRkYmMtOGE1ZS1mMzhlZmNjZmVmM2UiLCJ1bmlxdWVfbmFtZSI6InBhdmFuLmtAbWFrb25pc3NvZnQuY29tIiwidXBuIjoicGF2YW4ua0BtYWtvbmlzc29mdC5jb20iLCJ1dGkiOiJpVXJmbzNTWXkwNlNLN0FjNmZZdkFBIiwidmVyIjoiMS4wIiwid2lkcyI6WyJiNzlmYmY0ZC0zZWY5LTQ2ODktODE0My03NmIxOTRlODU1MDkiXSwieG1zX2NjIjpbIkNQMSJdLCJ4bXNfaWRyZWwiOiIyMiAxIiwieG1zX3NzbSI6IjEiLCJ4bXNfc3QiOnsic3ViIjoidExVVnQwa2x2RkE2N192dTJ1d3ZSUHJBZlltM0wwT1VDTHZqSmp2SFVDVSJ9LCJ4bXNfdGNkdCI6MTUzODcxMzQ1Nn0.024JLM2OY1WGN5BkDBvOv7eGvCD62_fP2cS1g9yveU7QhrDGrwUYfpBoxwRXzvIrWJXjITqXjA6kd6aHZgOi5zBWjoifshooVPm1CNdPadUG1P_Gkf-iv7Qu0BOaBN8s_Gk-5lHFyVtKTd3REtsK2wMnGge-3BlZ_jKpG3pPFCWufvb1yY9RzZ8V1mEf48qfM8IAyg_bbqVUrhqKp654NqVrfVOc6cyDNZFwlTy2Y85llwx7NdOXcvS8enTLDsedGkOltoxa2JVIORThDelKrve77D_T8RYOpN_fFPWgdOZ1YS3C6mOphjsex818dD1Hywa2aimWkBUfqnkTc-VDhA"
+    if not access_token:
+        return None
+
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json'
+    }
+
+    # Combine date and time into ISO 8601 format
+    start_date_time = f"{start_date}T{start_time}"
+    end_date_time = f"{end_date}T{end_time}"
+
+    event = {
+        'subject': subject,
+        'start': {
+            'dateTime': start_date_time,
+            'timeZone': time_zone
+        },
+        'end': {
+            'dateTime': end_date_time,
+            'timeZone': time_zone
+        },
+        'attendees': [
+            {
+                'emailAddress': {
+                    'address': attendee,
+                    'name': ''
+                },
+                'type': 'required'
+            } for attendee in attendees
+        ],
+        'isOnlineMeeting': True,
+        'onlineMeetingProvider': 'teamsForBusiness'
+    }
+
+    response = requests.post(
+        f'{GRAPH_ENDPOINT}/users/{recruiter_email}/events',
+        headers=headers,
+        data=json.dumps(event)
+    )
+
+    if response.status_code != 201:
+        return None, f"Error creating event: {response.status_code} - {response.text}"
+    
+    return response.json(), None
+
+@app.route('/create_event', methods=['POST'])
+def handle_create_event():
+    data = request.json
+    
+    if not data:
+        return jsonify({'error': 'Invalid request, no JSON body provided'}), 400
+    
+    subject = data.get('subject')
+    start_date = data.get('start_date')
+    start_time = data.get('start_time')
+    end_date = data.get('end_date')
+    end_time = data.get('end_time')
+    attendees = data.get('attendees')
+    recruiter_email = data.get('recruiter_email')
+    time_zone = data.get('time_zone', 'UTC')  # Default to UTC if not provided
+    
+    if not all([subject, start_date, start_time, end_date, end_time, attendees, recruiter_email]):
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    event_response, error = create_event(
+        subject=subject,
+        start_date=start_date,
+        start_time=start_time,
+        end_date=end_date,
+        end_time=end_time,
+        attendees=attendees,
+        recruiter_email=recruiter_email,
+        time_zone=time_zone
+    )
+    
+    if event_response:
+        return jsonify({'message': 'Event created successfully.', 'event': event_response}), 200
+    else:
+        return jsonify({'error': error}), 500
+
+
+
 # from msal import ConfidentialClientApplication
 # import requests
 # from flask import Flask, request, jsonify
