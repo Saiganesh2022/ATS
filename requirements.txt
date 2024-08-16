@@ -78,3 +78,6 @@ matplotlib
 PyPDF2
 
 google-generativeai
+
+gevent>=1.4
+
