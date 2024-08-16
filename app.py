@@ -361,8 +361,6 @@ import requests
 import json
 from msal import ConfidentialClientApplication
 
-app = Flask(__name__)
-
 # Your app credentials
 TENANT_ID = '8a7c6498-6635-4dbc-8a5e-f38efccfef3e'
 CLIENT_ID = '7ba39e41-0ec7-411d-8649-6607574db5f9'
@@ -3408,7 +3406,7 @@ def management_login():
                     session['username'] = user.username
                     session['user_name'] = user.name
                     session['JWT Token'] = secrets.token_hex(16)
-                    return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id':user.id})
+                    return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id':user.id,'email':user.email})
                 else:
                     message = 'Your account is not verified yet. Please check your email for the verification link.'
             else:
