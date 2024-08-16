@@ -81,3 +81,4 @@ google-generativeai
 
 gevent>=1.4
 
+msal
