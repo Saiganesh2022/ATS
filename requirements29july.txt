@@ -127,3 +127,4 @@ weasel==0.3.4
 Werkzeug==2.3.6
 yarl==1.9.4
 zipp==3.16.2
+msal
