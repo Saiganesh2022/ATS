@@ -396,9 +396,13 @@ def create_event(subject, start_date, start_time, end_date, end_time, attendees,
         'Content-Type': 'application/json'
     }
 
-    # Combine date and time into ISO 8601 format
-    start_date_time = f"{start_date}T{start_time}"
-    end_date_time = f"{end_date}T{end_time}"
+    # # Combine date and time into ISO 8601 format
+    # start_date_time = f"{start_date}T{start_time}"
+    # end_date_time = f"{end_date}T{end_time}"
+    
+    # Combine date and time into ISO 8601 format without seconds
+    start_date_time = f"{start_date}T{start_time[:5]}"  # Removing seconds
+    end_date_time = f"{end_date}T{end_time[:5]}"        # Removing seconds
 
     event = {
         'subject': subject,
