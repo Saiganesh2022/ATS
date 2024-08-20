@@ -542,6 +542,31 @@ def update_event(event_id, subject, start_date, start_time, end_date, end_time, 
     
     return response.json(), None
 
+
+# Function to delete an event
+def delete_event(event_id, recruiter_email):
+    access_token = get_access_token()
+
+    if not access_token:
+        return None, "Access token not available"
+
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.delete(
+        f'https://graph.microsoft.com/v1.0/users/{recruiter_email}/events/{event_id}',
+        headers=headers
+    )
+
+    if response.status_code != 204:
+        return None, f"Error deleting event: {response.status_code} - {response.text}"
+    
+    return True, None
+
+
+
 # Route to create an event
 @app.route('/create_event', methods=['POST'])
 def handle_create_event():
@@ -608,9 +633,13 @@ def handle_create_event():
 
 
 # Route to update an event
-@app.route('/update_event/<event_id>', methods=['POST'])
+@app.route('/update_event/<meeting_id>', methods=['POST'])
 def handle_update_event(event_id):
     data = request.json
+    meeting_id = data.get('meeting_id')
+    
+    meetings = ScheduledMeeting.query.filter_by(id=meeting_id).first()
+    event_id = meetings.event_id
     
     if not data:
         return jsonify({'error': 'Invalid request, no JSON body provided'}), 400
@@ -662,6 +691,40 @@ def handle_update_event(event_id):
         return jsonify({'error': error}), 500
 
 
+@app.route('/delete_event', methods=['POST'])
+def handle_delete_event():
+    data = request.json
+    
+    if not data:
+        return jsonify({'error': 'Invalid request, no JSON body provided'}), 400
+
+    meeting_id = data.get('meeting_id')
+    
+    if not meeting_id:
+        return jsonify({'error': 'Missing meeting_id field'}), 400
+
+    # Fetch the meeting details
+    meeting = ScheduledMeeting.query.filter_by(id=meeting_id).first()
+
+    if not meeting:
+        return jsonify({'error': 'Meeting not found'}), 404
+
+    event_id = meeting.event_id
+    recruiter_email = meeting.recruiter_email
+
+    # Call the delete_event function
+    success, error = delete_event(event_id, recruiter_email)
+    
+    if success:
+        # Remove the meeting record from the database
+        db.session.delete(meeting)
+        db.session.commit()
+        return jsonify({'message': 'Event deleted successfully.'}), 200
+    else:
+        return jsonify({'error': error}), 500
+
+
+
 @app.route('/get_all_meetings', methods=['POST'])
 def get_all_meetings():
     data = request.json
@@ -681,6 +744,7 @@ def get_all_meetings():
         meetings_data = []
         for meeting in meetings:
             meeting_dict = {
+                'meeting_id': meeting.id,
                 'event_id': meeting.event_id,
                 'recruiter_id': meeting.recruiter_id,
                 'subject': meeting.subject,
