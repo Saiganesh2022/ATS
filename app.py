@@ -362,6 +362,7 @@ import json
 from msal import ConfidentialClientApplication
 
 # Your app credentials
+# Your app credentials
 TENANT_ID = '8a7c6498-6635-4dbc-8a5e-f38efccfef3e'
 CLIENT_ID = '7ba39e41-0ec7-411d-8649-6607574db5f9'
 CLIENT_SECRET = '2ET8Q~TkfssfstnbCWmFP2U24phkklo_w080uc7E'
@@ -377,17 +378,19 @@ msal_app = ConfidentialClientApplication(
 )
 
 # Function to acquire access token
-# def get_access_token():
-#     result = msal_app.acquire_token_for_client(scopes=SCOPES)
-#     if "access_token" in result:
-#         return result["access_token"]
-#     else:
-#         print("Failed to obtain access token:", result.get("error_description"))
-#         return None
+def get_access_token():
+    result = msal_app.acquire_token_for_client(scopes=SCOPES)
+    if "access_token" in result:
+        return result["access_token"]
+    else:
+        print("Failed to obtain access token:", result.get("error_description"))
+        return None
 
 def create_event(subject, start_date, start_time, end_date, end_time, attendees, recruiter_email, time_zone):
-    # access_token = get_access_token()
-    access_token ="eyJ0eXAiOiJKV1QiLCJub25jZSI6Ii10LVBPVE5BTUx6eGF1Rm05SHF3cXVBWC1OeVFKaFhHSjdMTHp0cTZyYnMiLCJhbGciOiJSUzI1NiIsIng1dCI6IktRMnRBY3JFN2xCYVZWR0JtYzVGb2JnZEpvNCIsImtpZCI6IktRMnRBY3JFN2xCYVZWR0JtYzVGb2JnZEpvNCJ9.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTAwMDAtYzAwMC0wMDAwMDAwMDAwMDAiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC84YTdjNjQ5OC02NjM1LTRkYmMtOGE1ZS1mMzhlZmNjZmVmM2UvIiwiaWF0IjoxNzI0MDQ1OTUwLCJuYmYiOjE3MjQwNDU5NTAsImV4cCI6MTcyNDEzMjY1MiwiYWNjdCI6MCwiYWNyIjoiMSIsImFpbyI6IkFWUUFxLzhYQUFBQXFsdXFURUxqMml4ZXZjMVcrcFJvSGltdEVxakRPTFdOK1JFZjdxcWxydkVYWWV4bUFRUFAzVGxOMTh3a2xsc1FJSWhJWkR3QzlVY1FWajhQTEcvRm1XdkNNT3k2VzBiT2RwOEd4NzRtSHFnPSIsImFtciI6WyJwd2QiLCJtZmEiXSwiYXBwX2Rpc3BsYXluYW1lIjoiR3JhcGggRXhwbG9yZXIiLCJhcHBpZCI6ImRlOGJjOGI1LWQ5ZjktNDhiMS1hOGFkLWI3NDhkYTcyNTA2NCIsImFwcGlkYWNyIjoiMCIsImZhbWlseV9uYW1lIjoiSyIsImdpdmVuX25hbWUiOiJwYXZhbiIsImlkdHlwIjoidXNlciIsImlwYWRkciI6IjI0MDE6NDkwMDoxY2JjOmQ0YmI6NjFiYjpiZDAzOmU3NWI6MTZkZiIsIm5hbWUiOiJwYXZhbiIsIm9pZCI6IjZmODM2YWJjLTlmYzMtNDExYS1hNTAyLTJjMjMyOTI2OWY2MiIsInBsYXRmIjoiMyIsInB1aWQiOiIxMDAzMjAwMzQzODBDRTk1IiwicmgiOiIwLkFTc0FtR1I4aWpWbXZFMktYdk9PX01fdlBnTUFBQUFBQUFBQXdBQUFBQUFBQUFBckFMOC4iLCJzY3AiOiJDYWxlbmRhcnMuUmVhZCBDYWxlbmRhcnMuUmVhZC5TaGFyZWQgQ2FsZW5kYXJzLlJlYWRCYXNpYyBDYWxlbmRhcnMuUmVhZFdyaXRlIG9wZW5pZCBwcm9maWxlIFVzZXIuUmVhZCBlbWFpbCIsInN1YiI6ImhhVmIxXzJDUmM1dl8wRU5hNnh2T2hTR2pWMDRXNERQMWhLOWN4MVZQYlkiLCJ0ZW5hbnRfcmVnaW9uX3Njb3BlIjoiQVMiLCJ0aWQiOiI4YTdjNjQ5OC02NjM1LTRkYmMtOGE1ZS1mMzhlZmNjZmVmM2UiLCJ1bmlxdWVfbmFtZSI6InBhdmFuLmtAbWFrb25pc3NvZnQuY29tIiwidXBuIjoicGF2YW4ua0BtYWtvbmlzc29mdC5jb20iLCJ1dGkiOiJOWFBkVXV1SGdrcVMwQjQ1MmFSUkFBIiwidmVyIjoiMS4wIiwid2lkcyI6WyJiNzlmYmY0ZC0zZWY5LTQ2ODktODE0My03NmIxOTRlODU1MDkiXSwieG1zX2NjIjpbIkNQMSJdLCJ4bXNfaWRyZWwiOiIxIDE2IiwieG1zX3NzbSI6IjEiLCJ4bXNfc3QiOnsic3ViIjoidExVVnQwa2x2RkE2N192dTJ1d3ZSUHJBZlltM0wwT1VDTHZqSmp2SFVDVSJ9LCJ4bXNfdGNkdCI6MTUzODcxMzQ1Nn0.PccSif1zeRu-ONbcyoZzt4WUsPviB0VUAVJhl-EThaI2bitegO8iwSmeEvXY-Xn-BfOhs8dO5ylfayFCqCgplQi1kwy3oyc3cCD1cwEUCHvDx3T-QYEUiWaMh6Z7__zfJq9is5ZTRDExQtp0JAYIpLkVFL-VR3BhZNOm1UYBjz_pILO-rGY1C-T0J0NcVeJ2GqZMfed7jb2xcCsMbLq2KZMaXRWjhgws5NtJ3N3Ew4nnsyR7pH6BTKyUrj5QZbnk_pouwD9h0-mRYBH73ajF0ladvHOEELfvJFEVNyygOrbHeQBu5KaUzFPfSmPPECx0VN0nTHCA2rvMYcAONxjo7w"
+    access_token = get_access_token()
+    # print("access_token : ",access_token)
+    #access_token = "eyJ0eXAiOiJKV1QiLCJub25jZSI6Ik84c2dMcENrUERqQW5yNHNkUGZCeHZDSmF6MURwWncxZWJPSTEtUUgtMG8iLCJhbGciOiJSUzI1NiIsIng1dCI6IktRMnRBY3JFN2xCYVZWR0JtYzVGb2JnZEpvNCIsImtpZCI6IktRMnRBY3JFN2xCYVZWR0JtYzVGb2JnZEpvNCJ9.eyJhdWQiOiJodHRwczovL2dyYXBoLm1pY3Jvc29mdC5jb20iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC84YTdjNjQ5OC02NjM1LTRkYmMtOGE1ZS1mMzhlZmNjZmVmM2UvIiwiaWF0IjoxNzI0MDQ3Mzg5LCJuYmYiOjE3MjQwNDczODksImV4cCI6MTcyNDA1MTI4OSwiYWlvIjoiRTJkZ1lQRHVWVnFrdEQ2Rk1kSEZwL2pIREYweEFBPT0iLCJhcHBfZGlzcGxheW5hbWUiOiJBVFMiLCJhcHBpZCI6IjdiYTM5ZTQxLTBlYzctNDExZC04NjQ5LTY2MDc1NzRkYjVmOSIsImFwcGlkYWNyIjoiMSIsImlkcCI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzhhN2M2NDk4LTY2MzUtNGRiYy04YTVlLWYzOGVmY2NmZWYzZS8iLCJpZHR5cCI6ImFwcCIsIm9pZCI6IjE3YTE2ZGJhLWEwMjMtNDE0Ny04ZWU1LTRiNGU5ZTZjMGRhNiIsInJoIjoiMC5BU3NBbUdSOGlqVm12RTJLWHZPT19NX3ZQZ01BQUFBQUFBQUF3QUFBQUFBQUFBQXJBQUEuIiwic3ViIjoiMTdhMTZkYmEtYTAyMy00MTQ3LThlZTUtNGI0ZTllNmMwZGE2IiwidGVuYW50X3JlZ2lvbl9zY29wZSI6IkFTIiwidGlkIjoiOGE3YzY0OTgtNjYzNS00ZGJjLThhNWUtZjM4ZWZjY2ZlZjNlIiwidXRpIjoiRXY3OFdJdXVvMENCSnEzNUNoMVFBQSIsInZlciI6IjEuMCIsIndpZHMiOlsiMDk5N2ExZDAtMGQxZC00YWNiLWI0MDgtZDVjYTczMTIxZTkwIl0sInhtc19pZHJlbCI6IjI0IDciLCJ4bXNfdGNkdCI6MTUzODcxMzQ1Nn0.WRGMVDNuoPoh8ozfZQF-7gI1euO_1mysBr-66yFEejsyuYTGDT_AUAgBJfPRzH-obcvLK4g0UCPt9xtPhVEuaYwiTKCDkJyx4iJ5gku8IjA5K_JruYUWa5n9rMv_o5sJ21H3-kW1pepJxF3OhTHEdPSNjbI3pd9ItIgyw5sr3H055mBbH_7v8GNrFU18zQ8ZJiAodgqyWz-JSU4vdw8OCu3VDRrmcGiHfe65rFjyKr25uAE4Qug_kLdhGoODAXGbUco5ASyUiH8Rr7MflNpMkXSiRBq31mLb7Na-M0lDFLyxfiRnKTJT2QA0EyloQz4TSOOez9hOBJaA-KFH02-wkg"
+
     if not access_token:
         return None
 
@@ -396,10 +399,6 @@ def create_event(subject, start_date, start_time, end_date, end_time, attendees,
         'Content-Type': 'application/json'
     }
 
-    # # Combine date and time into ISO 8601 format
-    # start_date_time = f"{start_date}T{start_time}"
-    # end_date_time = f"{end_date}T{end_time}"
-    
     # Combine date and time into ISO 8601 format without seconds
     start_date_time = f"{start_date}T{start_time[:5]}"  # Removing seconds
     end_date_time = f"{end_date}T{end_time[:5]}"        # Removing seconds
@@ -428,7 +427,7 @@ def create_event(subject, start_date, start_time, end_date, end_time, attendees,
     }
 
     response = requests.post(
-        f'{GRAPH_ENDPOINT}/users/{recruiter_email}/events',
+        f'https://graph.microsoft.com/v1.0/users/{recruiter_email}/events',
         headers=headers,
         data=json.dumps(event)
     )
@@ -443,7 +442,7 @@ def handle_create_event():
     data = request.json
     
     if not data:
-        return jsonify({'error': 'Invalid request, no JSON body provided'}), 400
+        return jsonify({'error': 'Invalid request, no JSON body provided'}), 500
     
     subject = data.get('subject')
     start_date = data.get('start_date')
@@ -452,10 +451,10 @@ def handle_create_event():
     end_time = data.get('end_time')
     attendees = data.get('attendees')
     recruiter_email = data.get('recruiter_email')
-    time_zone = data.get('time_zone', 'UTC')  # Default to UTC if not provided
+    time_zone = data.get('time_zone')  # Default to UTC if not provided
     
     if not all([subject, start_date, start_time, end_date, end_time, attendees, recruiter_email]):
-        return jsonify({'error': 'Missing required fields'}), 400
+        return jsonify({'error': 'Missing required fields'}), 500
     
     event_response, error = create_event(
         subject=subject,
