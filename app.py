@@ -3758,7 +3758,7 @@ def management_login():
                     session['username'] = user.username
                     session['user_name'] = user.name
                     session['JWT Token'] = secrets.token_hex(16)
-                    return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id':user.id,'email':user.email})
+                    return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id':user.id,'email':user.email,'name':user.name})
                 else:
                     message = 'Your account is not verified yet. Please check your email for the verification link.'
             else:
