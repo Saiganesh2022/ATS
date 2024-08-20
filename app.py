@@ -750,8 +750,10 @@ def get_all_meetings():
                 'subject': meeting.subject,
                 'start_date': meeting.start_date.strftime('%Y-%m-%d'),  # Format date
                 'start_time': meeting.start_time.strftime('%H:%M:%S'),  # Format time
+
                 'end_date': meeting.end_date.strftime('%Y-%m-%d'), 
-                'end_time': meeting.end_time.strftime('%Y-%m-%d'),
+                'end_time': meeting.end_time.strftime('%H:%M:%S'),
+                
                 'attendees': meeting.attendees,  # Already stored as a comma-separated string
                 'cc_recipients': meeting.cc_recipients,  # Already stored as a comma-separated string
                 'recruiter_email': meeting.recruiter_email,
