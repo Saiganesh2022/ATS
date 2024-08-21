@@ -611,25 +611,34 @@ def handle_create_event():
     if event_response:
         event_id = event_response.get('id')
         
+        # Correctly extract joinUrl from the onlineMeeting field
+        join_url = event_response.get('onlineMeeting', {}).get('joinUrl', '')
+        print("join_url:", join_url)
+
         # Insert the event details into the scheduled_meeting table
         new_meeting = ScheduledMeeting(
             event_id=event_id,
             recruiter_id=recruiter_id,
             subject=subject,
-            start_date=start_date,  # Ensure this field exists in your model
-            start_time=start_time,  # Ensure this field exists in your model
-            end_date=end_date,      # Ensure this field exists in your model
-            end_time=end_time,      # Ensure this field exists in your model
+            start_date=start_date,
+            start_time=start_time,
+            end_date=end_date,
+            end_time=end_time,
             attendees=','.join(attendees),
             cc_recipients=','.join(cc_recipients),
             recruiter_email=recruiter_email,
-            time_zone=time_zone
+            time_zone=time_zone,
+            join_url=join_url  # Save joinUrl in the database
         )
 
         db.session.add(new_meeting)
         db.session.commit()
         
-        return jsonify({'message': 'Event created and saved successfully.', 'event': event_response}), 200
+        return jsonify({
+            'message': 'Event created and saved successfully.',
+            'event': event_response,
+            'joinUrl': join_url
+        }), 200
     else:
         return jsonify({'error': error}), 500
 
