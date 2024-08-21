@@ -356,18 +356,20 @@ class Notification(db.Model):
 class ScheduledMeeting(db.Model):
     __tablename__ = 'scheduled_meetings'
     
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
-    recruiter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Foreign key to User
-    event_id = db.Column(db.String(500), unique=True, nullable=False)  # Increased length to accommodate longer event IDs
-    subject = db.Column(db.String(200), nullable=False)
-    start_date = db.Column(db.Date, nullable=False)  # Only stores the start date
-    start_time = db.Column(db.Time, nullable=False)  # Only stores the start time (hours and minutes)
-    end_date = db.Column(db.Date, nullable=False)  # Only stores the end date
-    end_time = db.Column(db.Time, nullable=False)  # Only stores the end time (hours and minutes)
-    attendees = db.Column(db.String(500), nullable=False)  # Stores comma-separated attendee emails
-    cc_recipients = db.Column(db.String(500))  # Stores comma-separated CC recipient emails
-    recruiter_email = db.Column(db.String(100), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.String(500), nullable=False)
+    recruiter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    subject = db.Column(db.String(255), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    attendees = db.Column(db.Text, nullable=False)
+    cc_recipients = db.Column(db.Text, nullable=True)
+    recruiter_email = db.Column(db.String(255), nullable=False)
     time_zone = db.Column(db.String(50), nullable=False)
+    join_url = db.Column(db.String(512), nullable=True)  # Add this field
+    
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp(), nullable=False)
 
 
@@ -757,7 +759,8 @@ def get_all_meetings():
                 'attendees': meeting.attendees,  # Already stored as a comma-separated string
                 'cc_recipients': meeting.cc_recipients,  # Already stored as a comma-separated string
                 'recruiter_email': meeting.recruiter_email,
-                'time_zone': meeting.time_zone
+                'time_zone': meeting.time_zone,
+                'join_url': meeting.join_url
             }
             meetings_data.append(meeting_dict)
         
