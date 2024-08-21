@@ -376,7 +376,7 @@ class ScheduledMeeting(db.Model):
     # Relationship to User
     #recruiter = db.relationship("User", backref="scheduled_meetings")
 
-    def __init__(self, event_id, subject, start_date, start_time,end_date,end_time, attendees, cc_recipients, recruiter_id, recruiter_email, time_zone):
+    def __init__(self, event_id, subject, start_date, start_time,end_date,end_time, attendees, cc_recipients, recruiter_id, recruiter_email, time_zone, join_url):
         self.event_id = event_id
         self.subject = subject
         self.start_date = start_date
@@ -388,6 +388,7 @@ class ScheduledMeeting(db.Model):
         self.recruiter_id = recruiter_id
         self.recruiter_email = recruiter_email
         self.time_zone = time_zone
+        self.join_url = join_url
 
 ###################################################################################################
 
