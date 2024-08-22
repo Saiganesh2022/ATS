@@ -4205,8 +4205,6 @@ def assign_candidate_to_a_new_recruiter():
                     Candidate.management == current_recruiter_username
                 )
             ).first()
-            
-            print("Candidate data:", candidate)  # Debugging: Check candidate details
 
             if candidate is None:
                 return jsonify({"error": f"Candidate with ID {candidate_id} not found or not assigned to current recruiter/management {current_recruiter_username}"}), 404
@@ -4252,9 +4250,8 @@ def assign_candidate_to_a_new_recruiter():
                     # Fetch new recruiter details
                     new_recruiter = User.query.filter_by(name=new_recruiter_username).first()
                     if new_recruiter:
-                        new_recruiter_name = new_recruiter.name
-                        print(f"New Recruiter Email: {new_recruiter.email}")  # Debugging: Print email
-                        print(f"New Recruiter Name: {new_recruiter_name}")  # Debugging: Print name
+                        new_recruiter_email = new_recruiter.email
+
                         job_data = f"""
                         <tr>
                             <td>{job_post.id}</td>
@@ -4263,24 +4260,18 @@ def assign_candidate_to_a_new_recruiter():
                             <td>{job_post.location}</td>
                         </tr>
                         """
-                        job_transfered_to_new_recruiter_notification(new_recruiter.email, new_recruiter_name, job_data)
-                    else:
-                        print("New Recruiter not found in the database.")  # Debugging: Recruiter not found
+                        job_transfered_to_new_recruiter_notification(new_recruiter_email, new_recruiter_name, job_data)
 
         # Commit changes to the database
         db.session.commit()
 
         # Send notification email to the new recruiter for candidate assignment
         if candidates_data and new_recruiter:
-            print(f"Sending Candidate Assignment Notification to {new_recruiter.email} ({new_recruiter_name})")  # Debugging: Confirm email sending
-            assign_candidates_notification(new_recruiter.email, new_recruiter_name, candidates_data)
-        else:
-            print("Candidates data or new recruiter is missing; email notification not sent.")  # Debugging: Missing data
+            assign_candidates_notification(new_recruiter_email, new_recruiter_name, candidates_data)
 
         return jsonify({'status': 'success', "message": "Candidates assigned successfully."})
     except Exception as e:
         db.session.rollback()
-        print(f"Error assigning candidates: {str(e)}")  # Debugging: Print error
         return jsonify({'status': 'error', "error": f"Error assigning candidates: {str(e)}"}), 500
 
     
