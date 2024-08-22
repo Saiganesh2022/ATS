@@ -54,17 +54,31 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 cors = CORS(app)
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-# app.config['MAIL_SERVER'] = 'smtp.office365.com'
+app.config['MAIL_SERVER'] = 'smtp.office365.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-# app.config['MAIL_USERNAME'] = 'pavan.k@makonissoft.com'
-# app.config['MAIL_PASSWORD'] = 'Roh64272'
+app.config['MAIL_USERNAME'] = 'ganesh.s@makonissoft.com'
+app.config['MAIL_PASSWORD'] = 'Myphone@7pro'
+
+# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+# app.config['MAIL_PORT'] = 587
+# app.config['MAIL_USE_TLS'] = True
+# app.config['MAIL_USERNAME'] = 'kanuparthisaiganesh582@gmail.com'
+# app.config['MAIL_PASSWORD'] = 'YourGeneratedAppPassword'
+
+
+
+#app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+# app.config['MAIL_SERVER'] = 'smtp.office365.com'
+# app.config['MAIL_PORT'] = 587
+# app.config['MAIL_USE_TLS'] = True
+# app.config['MAIL_USERNAME'] = 'recruiterpro@makonissoft.com'
+# app.config['MAIL_PASSWORD'] = 'Roh@64272'
 # app.config['MAIL_USERNAME'] = 'ganesh.s@makonissoft.com'
-# app.config['MAIL_PASSWORD'] = 'Fol98135'
-app.config['MAIL_USERNAME'] = 'kanuparthisaiganesh582@gmail.com'
-# app.config['MAIL_PASSWORD'] = 'Ganesh@2022'
-app.config['MAIL_PASSWORD'] = 'cdxfkuefixpigwae'
+# app.config['MAIL_PASSWORD'] = 'Myphone@7pro'
+# app.config['MAIL_USERNAME'] = 'kanuparthisaiganesh582@gmail.com'
+
+# app.config['MAIL_PASSWORD'] = 'Makonis@1234'
 mail = Mail(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
@@ -2994,7 +3008,7 @@ def generate_otp():
             otp = generate_6otp()
             user.otp = otp
             db.session.commit()
-            msg = Message('New OTP Generated', sender='kanuparthisaiganesh582@gmail.com', recipients=[email])
+            msg = Message('New OTP Generated', sender='ganesh.s@makonissoft.com', recipients=[email])
             msg.html = f'''
             <!DOCTYPE html>
             <html lang="en">
@@ -3119,7 +3133,7 @@ def reset_password():
                 user.password = new_password_hashed
                 db.session.commit()
                 # Send the updated password to the user's email
-                msg = Message('Password Changed', sender='kanuparthisaiganesh582@gmail.com', recipients=[user.email])
+                msg = Message('Password Changed', sender='ganesh.s@makonissoft.com', recipients=[user.email])
                 msg.html = f'''
                 <!DOCTYPE html>
                 <html lang="en">
@@ -3394,7 +3408,7 @@ def signup():
         verification_link = url_for('verify', token=verification_token, _external=True)
 
         # Send the verification email
-        msg = Message('Account Verification', sender='kanuparthisaiganesh582@gmail.com', recipients=[new_user.email])
+        msg = Message('Account Verification', sender='ganesh.s@makonissoft.com', recipients=[new_user.email])
         
         msg.html = f'''
         <html>
@@ -3567,7 +3581,7 @@ def signup_onetime():
     verification_link = url_for('verify', token=verification_token, _external=True)
 
     # Send the verification email
-    msg = Message('Account Verification', sender='kanuparthisaiganesh582@gmail.com', recipients=[new_user.email])
+    msg = Message('Account Verification', sender='ganesh.s@makonissoft.com', recipients=[new_user.email])
     
     msg.html = f'''
     <html>
@@ -4064,7 +4078,7 @@ def assign_candidates_notification(recruiter_email, new_recruiter_name, candidat
 
     msg = Message(
         'Candidate Assignment Notification',
-        sender='kanuparthisaiganesh582@gmail.com',
+        sender='ganesh.s@makonissoft.com',
         recipients=[recruiter_email]
     )
     msg.html = html_body
@@ -4158,7 +4172,7 @@ def job_transfered_to_new_recruiter_notification(recruiter_email, new_recruiter_
 
     msg = Message(
         f'New Job Requirement Assigned',
-        sender='kanuparthisaiganesh582@gmail.com',
+        sender='ganesh.s@makonissoft.com',
         recipients=[recruiter_email]
     )
     msg.html = html_body
@@ -5585,7 +5599,7 @@ def update_candidate_careers(candidate_id, page_no):
                     user_email = User.query.get(session.get('user_id')).email
 
                     message = Message(f'Job Application Status - {candidate_position}',
-                                      sender='kanuparthisaiganesh582@gmail.com', recipients=[candidate_email])
+                                      sender='ganesh.s@makonissoft.com', recipients=[candidate_email])
 
                     if user_type == 'management':
                         management_email = user_email
@@ -5624,7 +5638,7 @@ Thanks,
                     user_email = User.query.get(session.get('user_id')).email
 
                     message = Message(f'Job Application Status - {candidate_position}',
-                                      sender='kanuparthisaiganesh582@gmail.com', recipients=[candidate_email])
+                                      sender='ganesh.s@makonissoft.com', recipients=[candidate_email])
 
                     if user_type == 'management':
                         management_email = user_email
@@ -6088,7 +6102,7 @@ def post_job_send_notification(recruiter_email, new_recruiter_name, job_data):
 
     msg = Message(
         'New Requirement Assigned',
-        sender='kanuparthisaiganesh582@gmail.com',
+        sender='ganesh.s@makonissoft.com',
         recipients=[recruiter_email]
     )
     msg.html = html_body
@@ -6221,10 +6235,10 @@ def send_notifications():
 
     invalid_emails = []
     for recruiter_name in job_post.recruiter.split(','):
-        recruiter = User.query.filter_by(username=recruiter_name.strip()).first()
+        recruiter = User.query.filter_by(name=recruiter_name.strip()).first()
         if recruiter:
             if is_valid_email(recruiter.email):
-                error_msg = post_job_send_notification(recruiter.email, recruiter.username, job_data)
+                error_msg = post_job_send_notification(recruiter.email, recruiter.name, job_data)
                 if error_msg:
                     return jsonify({'status': 'error', 'message': error_msg}), 500
             else:
@@ -7103,7 +7117,7 @@ def change_password():
     user.password = hashed_new_password
     db.session.commit()
 
-    msg = Message('Password Changed', sender='kanuparthisaiganesh582@gmail.com', recipients=[user.email])
+    msg = Message('Password Changed', sender='ganesh.s@makonissoft.com', recipients=[user.email])
     msg.html = f'''
     <!DOCTYPE html>
     <html lang="en">
@@ -8493,7 +8507,7 @@ def job_removed_send_notification(recruiter_email, new_recruiter_name, job_data,
 
     msg = Message(
         f'Job Removal Notification: Job ID {job_id}',
-        sender='kanuparthisaiganesh582@gmail.com',
+        sender='ganesh.s@makonissoft.com',
         recipients=[recruiter_email]
     )
     msg.html = html_body
@@ -8588,7 +8602,7 @@ def job_updated_send_notification(recruiter_email, new_recruiter_name, job_data,
 
     msg = Message(
         f'Job Update Notification: Job ID {job_id}',
-        sender='kanuparthisaiganesh582@gmail.com',
+        sender='ganesh.s@makonissoft.com',
         recipients=[recruiter_email]
     )
     msg.html = html_body
@@ -8683,6 +8697,240 @@ def edit_job_post(job_post_id):
             return jsonify({'status': 'error', "message": "Unauthorized"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/send_edit_notifications', methods=['POST'])
+def send_edit_notifications():
+    try:
+        data = request.json
+        job_post_id = data.get('job_post_id')
+        old_recruiter_usernames = set(data.get('old_recruiter_usernames', []))
+        new_recruiter_usernames = set(data.get('new_recruiter_usernames', []))
+
+        if not job_post_id:
+            return jsonify({'status': 'error', 'message': 'job_post_id is required'}), 400
+
+        job_post = JobPost.query.filter_by(id=job_post_id).first()
+        if not job_post:
+            return jsonify({'status': 'error', 'message': 'Job post not found'}), 404
+
+        job_data = f"<tr><td>{job_post.id}</td><td>{job_post.client}</td><td>{job_post.role}</td><td>{job_post.location}</td></tr>"
+
+        unchanged_recruiters = set(old_recruiter_usernames) & set(new_recruiter_usernames)
+        removed_recruiters = set(old_recruiter_usernames) - set(new_recruiter_usernames)
+        added_recruiters = set(new_recruiter_usernames) - set(old_recruiter_usernames)
+
+        all_recruiters = User.query.filter(
+            User.name.in_(set(new_recruiter_usernames).union(set(old_recruiter_usernames))),
+            User.user_type == 'recruiter',
+            User.is_active == True,
+            User.is_verified == True
+        ).all()
+
+        all_recruiter_emails = {recruiter.name: recruiter.email for recruiter in all_recruiters}
+
+        for recruiter_name in unchanged_recruiters:
+            email = all_recruiter_emails.get(recruiter_name)
+            if email:
+                job_updated_send_notification(recruiter_email=email, new_recruiter_name=recruiter_name, job_data=job_data, job_id=job_post.id)
+
+        for recruiter_name in removed_recruiters:
+            email = all_recruiter_emails.get(recruiter_name)
+            if email:
+                job_removed_send_notification(recruiter_email=email, new_recruiter_name=recruiter_name, job_data=job_data, job_id=job_post.id)
+
+        for recruiter_name in added_recruiters:
+            email = all_recruiter_emails.get(recruiter_name)
+            if email:
+                post_job_send_notification(recruiter_email=email, new_recruiter_name=recruiter_name, job_data=job_data)
+        
+        return jsonify({'status': 'success', 'message': 'Notifications sent successfully'}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+# def job_updated_send_notification(recruiter_email, new_recruiter_name, job_data, job_id):
+#     html_body = f"""
+#     <html>
+#     <head>
+#         <style>
+#             body {{
+#                 font-family: Arial, sans-serif;
+#                 color: #333;
+#                 line-height: 1.6;
+#                 background-color: #f4f4f4;
+#                 margin: 0;
+#                 padding: 0;
+#             }}
+#             .container {{
+#                 padding: 20px;
+#                 margin: 20px auto;
+#                 max-width: 600px;
+#                 background-color: #ffffff;
+#                 border: 1px solid #ddd;
+#                 border-radius: 8px;
+#                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+#             }}
+#             .header {{
+#                 background-color: #4CAF50;
+#                 color: white;
+#                 padding: 10px;
+#                 text-align: center;
+#                 font-size: 20px;
+#                 border-radius: 8px 8px 0 0;
+#             }}
+#             table {{
+#                 border-collapse: collapse;
+#                 width: 100%;
+#                 margin-top: 10px;
+#             }}
+#             th, td {{
+#                 border: 1px solid #ddd;
+#                 padding: 8px;
+#                 text-align: left;
+#             }}
+#             th {{
+#                 background-color: #4CAF50;
+#                 color: white;
+#             }}
+#             tr:nth-child(even) {{
+#                 background-color: #f9f9f9;
+#             }}
+#             p {{
+#                 margin: 10px 0;
+#             }}
+#             .footer {{
+#                 margin-top: 20px;
+#                 font-size: 12px;
+#                 color: #777;
+#                 text-align: center;
+#                 border-top: 1px solid #ddd;
+#                 padding-top: 10px;
+#             }}
+#         </style>
+#     </head>
+#     <body>
+#         <div class="container">
+#             <div class="header">
+#                 Job Update Notification
+#             </div>
+#             <p>Dear {new_recruiter_name},</p>
+#             <p>The job post with ID <b>{job_id}</b> has been updated.</p>
+#             <p>Please find the details below:</p>
+#             <table>
+#                 <tr>
+#                     <th style="width: 20%;">Job ID</th>
+#                     <th style="width: 30%;">Client</th>
+#                     <th style="width: 30%;">Role/Profile</th>
+#                     <th style="width: 20%;">Location</th>
+#                 </tr>
+#                 {job_data}
+#             </table>
+#             <p>Please check your dashboard for more details.</p>
+#             <p>Regards,</p>
+#             <p><b>Makonis Talent Track Pro Team</b></p>
+#         </div>
+#     </body>
+#     </html>
+#     """
+
+#     msg = Message(
+#         f'Job Update Notification: Job ID {job_id}',
+#         sender='kanuparthisaiganesh582@gmail.com',
+#         recipients=[recruiter_email]
+#     )
+#     msg.html = html_body
+#     mail.send(msg)
+
+
+# @app.route('/edit_job_post/<int:job_post_id>', methods=['POST'])
+# def edit_job_post(job_post_id):
+#     try:
+#         data = request.json
+#         user_id = data.get('user_id')
+        
+#         # Retrieve the user
+#         user = User.query.filter_by(id=user_id).first()
+        
+#         if user and user.user_type == 'management':
+#             # Retrieve the job post to be edited
+#             job_post = JobPost.query.get(job_post_id)
+            
+#             if job_post:
+#                 old_recruiter_usernames = set(job_post.recruiter.split(', ')) if isinstance(job_post.recruiter, str) else set()
+
+#                 # Check if any field except 'recruiter' is updated
+#                 fields_updated = set(data.keys()) - {'recruiter'}
+#                 if fields_updated:
+#                     # Update job post fields
+#                     job_post.client = data.get('client', job_post.client)
+#                     job_post.experience_min = data.get('experience_min', job_post.experience_min)
+#                     job_post.experience_max = data.get('experience_max', job_post.experience_max)
+#                     job_post.budget_min = data.get('budget_min', job_post.budget_min)
+#                     job_post.budget_max = data.get('budget_max', job_post.budget_max)
+#                     job_post.location = data.get('location', job_post.location)
+#                     job_post.shift_timings = data.get('shift_timings', job_post.shift_timings)
+#                     job_post.notice_period = data.get('notice_period', job_post.notice_period)
+#                     job_post.role = data.get('role', job_post.role)
+#                     job_post.detailed_jd = data.get('detailed_jd', job_post.detailed_jd)
+#                     job_post.mode = data.get('mode', job_post.mode)
+#                     job_post.job_status = data.get('job_status', job_post.job_status)
+#                     job_post.skills = data.get('skills', job_post.skills)
+#                     job_post.no_of_positions = data.get('no_of_positions', job_post.no_of_positions)
+                    
+#                     recruiters = data.get('recruiter', job_post.recruiter)
+#                     recruiters = set(recruiters if isinstance(recruiters, list) else [recruiters])
+#                     job_post.recruiter = ', '.join(list(recruiters))
+                    
+#                     job_type = data.get('Job_Type')
+#                     job_post.job_type = job_type
+#                     if job_type == 'Contract':
+#                         job_post.contract_in_months = data.get('Job_Type_details')
+                    
+#                     # Handle jd_pdf field
+#                     jd_pdf = data.get('jd_pdf')
+#                     if jd_pdf is not None:
+#                         jd_binary = base64.b64decode(jd_pdf)
+#                         job_post.jd_pdf = jd_binary
+#                         job_post.jd_pdf_present = True
+
+#                     # Update job post in the database
+#                     db.session.commit()
+                    
+#                     # Create notification records for each recruiter
+#                     if job_post.recruiter:
+#                         for recruiter in recruiters:
+#                             notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=recruiter).first()
+#                             if notification:
+#                                 notification.num_notification += 1
+#                             else:
+#                                 new_notification = Notification(job_post_id=job_post_id, recruiter_name=recruiter)
+#                                 db.session.add(new_notification)
+#                                 new_notification.num_notification = 1
+                    
+#                     # Update candidate details
+#                     candidates = Candidate.query.filter_by(job_id=job_post_id).all()
+#                     for candidate in candidates:
+#                         candidate.client = job_post.client
+#                         candidate.profile = job_post.role
+
+#                     db.session.commit()
+                    
+#                     return jsonify({
+#                         'status': 'success',
+#                         "message": "Job post details updated successfully",
+#                         'job_post_id': job_post_id,
+#                         'old_recruiter_usernames': list(old_recruiter_usernames),
+#                         'new_recruiter_usernames': list(recruiters)
+#                     }), 200
+#                 else:
+#                     return jsonify({'status': 'success', "message": "No fields updated other than recruiter"})
+#             else:
+#                 return jsonify({'status': 'error', "message": "Job post not found"})
+#         else:
+#             return jsonify({'status': 'error', "message": "Unauthorized"})
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 
 
