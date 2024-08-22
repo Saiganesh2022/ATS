@@ -645,14 +645,14 @@ def handle_create_event():
 
 
 # Route to update an event
-@app.route('/update_event/<meeting_id>', methods=['POST'])
-def handle_update_event(event_id):
+@app.route('/update_event', methods=['POST'])
+def handle_update_event():
     data = request.json
     meeting_id = data.get('meeting_id')
     
     meetings = ScheduledMeeting.query.filter_by(id=meeting_id).first()
     event_id = meetings.event_id
-    
+
     if not data:
         return jsonify({'error': 'Invalid request, no JSON body provided'}), 400
     
@@ -666,7 +666,7 @@ def handle_update_event(event_id):
     recruiter_email = data.get('recruiter_email')
     time_zone = data.get('time_zone')  # Default to UTC if not provided
     
-    if not all([subject, start_date, start_time, end_date, end_time, attendees, recruiter_email]):
+    if not all([subject, start_date, start_time, end_date, end_time, attendees, recruiter_email,meeting_id]):
         return jsonify({'error': 'Missing required fields'}), 400
     
     event_response, error = update_event(
