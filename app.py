@@ -764,7 +764,7 @@ def get_all_meetings():
         meetings = ScheduledMeeting.query.filter_by(recruiter_id=recruiter_id).all()
         
         if not meetings:
-            return jsonify({'message': 'No meetings found for this recruiter'}), 404
+            return jsonify({'message': 'No meetings found for this recruiter'})
         
         # Convert the result to a list of dictionaries
         meetings_data = []
