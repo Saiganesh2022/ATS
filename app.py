@@ -4182,19 +4182,20 @@ def job_transfered_to_new_recruiter_notification(recruiter_email, new_recruiter_
 @app.route('/assign_candidate_new_recuriter', methods=['POST'])
 def assign_candidate_to_a_new_recruiter():
     data = request.json
+    print("data ",data)
 
     try:
         candidates_data = ""
         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
-        new_recruiter = None
+        new_recruiter_email = None
         new_recruiter_name = ""
 
         for candidate_data in data['candidates']:
             candidate_id = candidate_data.get('candidate_id')
-            new_recruiter_username = candidate_data.get('new_recruiter')
+            new_recruiter_name = candidate_data.get('new_recruiter')
             current_recruiter_username = candidate_data.get('current_recruiter')
 
-            if not candidate_id or not new_recruiter_username or not current_recruiter_username:
+            if not candidate_id or not new_recruiter_name or not current_recruiter_username:
                 return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
 
             # Fetch candidate details from the database
@@ -4206,6 +4207,8 @@ def assign_candidate_to_a_new_recruiter():
                 )
             ).first()
 
+            print("Candidate data:", candidate)  # Debugging: Check candidate details
+
             if candidate is None:
                 return jsonify({"error": f"Candidate with ID {candidate_id} not found or not assigned to current recruiter/management {current_recruiter_username}"}), 404
 
@@ -4213,7 +4216,7 @@ def assign_candidate_to_a_new_recruiter():
             job_id = candidate.job_id
 
             # Update the recruiter for the candidate
-            candidate.recruiter = new_recruiter_username
+            candidate.recruiter = new_recruiter_name
             candidate.data_updated_date = current_datetime.date()
             candidate.data_updated_time = current_datetime.time()
 
@@ -4228,6 +4231,7 @@ def assign_candidate_to_a_new_recruiter():
             job_post = JobPost.query.filter_by(id=job_id).first()
             if job_post:
                 recruiters_list = job_post.recruiter.split(", ") if job_post.recruiter else []
+                print("recruiters_list :", recruiters_list)
 
                 if current_recruiter_username in recruiters_list:
                     # Check if there are any candidates still linked with this job post and the current recruiter
@@ -4238,20 +4242,23 @@ def assign_candidate_to_a_new_recruiter():
                     if linked_candidates == 0:
                         recruiters_list.remove(current_recruiter_username)
 
-                if new_recruiter_username not in recruiters_list:
-                    recruiters_list.append(new_recruiter_username)
+                if new_recruiter_name not in recruiters_list:
+                    recruiters_list.append(new_recruiter_name)
                     job_post.recruiter = ", ".join(recruiters_list)
 
                     # Add new notification for the new recruiter
-                    new_notification = Notification(job_post_id=job_id, recruiter_name=new_recruiter_username)
+                    new_notification = Notification(job_post_id=job_id, recruiter_name=new_recruiter_name)
                     db.session.add(new_notification)
                     new_notification.num_notification = 1
 
                     # Fetch new recruiter details
-                    new_recruiter = User.query.filter_by(name=new_recruiter_username).first()
+                    new_recruiter = User.query.filter_by(name=new_recruiter_name).first()  # Using `username` to fetch recruiter
+                    print("New Recruiter Name: :", new_recruiter)
                     if new_recruiter:
+                        new_recruiter_name = new_recruiter.name
                         new_recruiter_email = new_recruiter.email
-
+                        print("New Recruiter Email: ", new_recruiter_email)  # Debugging: Print email
+                        print(f"New Recruiter Name: {new_recruiter_name}")  # Debugging: Print name
                         job_data = f"""
                         <tr>
                             <td>{job_post.id}</td>
@@ -4261,18 +4268,25 @@ def assign_candidate_to_a_new_recruiter():
                         </tr>
                         """
                         job_transfered_to_new_recruiter_notification(new_recruiter_email, new_recruiter_name, job_data)
+                    else:
+                        print("New Recruiter not found in the database.")  # Debugging: Recruiter not found
 
         # Commit changes to the database
         db.session.commit()
 
         # Send notification email to the new recruiter for candidate assignment
         if candidates_data and new_recruiter:
+            print(f"Sending Candidate Assignment Notification to {new_recruiter_email} ({new_recruiter_name})")  # Debugging: Confirm email sending
             assign_candidates_notification(new_recruiter_email, new_recruiter_name, candidates_data)
+        else:
+            print("Candidates data or new recruiter email is missing; email notification not sent.")  # Debugging: Missing data
 
         return jsonify({'status': 'success', "message": "Candidates assigned successfully."})
     except Exception as e:
         db.session.rollback()
+        print(f"Error assigning candidates: {str(e)}")  # Debugging: Print error
         return jsonify({'status': 'error', "error": f"Error assigning candidates: {str(e)}"}), 500
+
 
     
 
