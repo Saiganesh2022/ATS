@@ -794,6 +794,46 @@ def get_all_meetings():
         return jsonify({'error': str(e)}), 500
 
 
+def get_calendar_events(access_token, recruiter_email):
+    headers = {'Authorization': f'Bearer {access_token}'}
+    response = requests.get(
+        f'https://graph.microsoft.com/v1.0/users/{recruiter_email}/events',
+        headers=headers
+    )
+
+    if response.status_code == 200:
+        events = response.json().get('value', [])
+        # Extract the 'id' (event_id) from each event
+        event_ids = [event['id'] for event in events]
+        return event_ids
+    else:
+        return []
+
+def delete_events_not_in_graph(recruiter_email, graph_event_ids):
+    # Query to get all event IDs from the database for the given recruiter_email
+    db_event_ids = db.session.query(ScheduledMeeting.event_id).filter_by(recruiter_email=recruiter_email).all()
+    db_event_ids = [id[0] for id in db_event_ids]  # Convert list of tuples to list of ids
+
+    # Identify events that are in the database but not in the Graph API response
+    events_to_delete = set(db_event_ids) - set(graph_event_ids)
+
+    # Delete these events from the database
+    if events_to_delete:
+        db.session.query(ScheduledMeeting).filter(ScheduledMeeting.event_id.in_(events_to_delete)).delete(synchronize_session=False)
+        db.session.commit()
+
+@app.route('/sync_events', methods=['POST'])
+def sync_events():
+    recruiter_email = request.json.get('recruiter_email')
+    
+    if not recruiter_email:
+        return jsonify({"error": "Missing recruiter_email in the request"}), 400
+    
+    access_token = get_access_token()
+    graph_event_ids = get_calendar_events(access_token, recruiter_email)
+    delete_events_not_in_graph(recruiter_email, graph_event_ids)
+    
+    return jsonify({"message": "Events synced successfully"}), 200
 
 
 
