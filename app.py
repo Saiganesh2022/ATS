@@ -437,6 +437,38 @@ def get_access_token():
         print("Failed to obtain access token:", result.get("error_description"))
         return None
 
+
+
+
+def strip_fractional_seconds(date_time_str):
+    if '.' in date_time_str:
+        date_time_str = date_time_str.split('.')[0]
+    return date_time_str
+
+def convert_to_ist(date_time_str, from_timezone):
+    from_tz = pytz.timezone(from_timezone)
+    
+    # Strip fractional seconds if present
+    date_time_str = strip_fractional_seconds(date_time_str)
+    
+    # Parse the datetime string and localize it to the given timezone
+    utc_time = datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S")
+    utc_time = from_tz.localize(utc_time)
+
+    # Convert to IST timezone
+    ist_timezone = pytz.timezone('Asia/Kolkata')
+    ist_time = utc_time.astimezone(ist_timezone)
+    
+    return ist_time
+
+def format_time_for_graph_api(time_str):
+    parts = time_str.split(":")
+    hour = parts[0].zfill(2)  # Add leading zero if necessary
+    minutes = parts[1] if len(parts) > 1 else "00"
+    return f"{hour}:{minutes}:00"  # Ensure seconds are included
+
+
+
 # Function to create an event with attendees and CC recipients
 def create_event(subject, start_date, start_time, end_date, end_time, attendees, cc_recipients, recruiter_email, time_zone):
     access_token = get_access_token()
@@ -449,9 +481,13 @@ def create_event(subject, start_date, start_time, end_date, end_time, attendees,
         'Content-Type': 'application/json'
     }
 
-    # Combine date and time into ISO 8601 format without seconds
-    start_date_time = f"{start_date}T{start_time[:5]}"  # Removing seconds
-    end_date_time = f"{end_date}T{end_time[:5]}"        # Removing seconds
+    # Format start and end times to include seconds
+    start_time = format_time_for_graph_api(start_time)
+    end_time = format_time_for_graph_api(end_time)
+
+    # Combine date and time into ISO 8601 format
+    start_date_time = f"{start_date}T{start_time}"
+    end_date_time = f"{end_date}T{end_time}"
 
     # Prepare attendees, including those in CC
     all_attendees = [
@@ -497,6 +533,69 @@ def create_event(subject, start_date, start_time, end_date, end_time, attendees,
         return None, f"Error creating event: {response.status_code} - {response.text}"
     
     return response.json(), None
+
+
+
+# Function to create an event with attendees and CC recipients
+# def create_event(subject, start_date, start_time, end_date, end_time, attendees, cc_recipients, recruiter_email, time_zone):
+#     access_token = get_access_token()
+
+#     if not access_token:
+#         return None, "Access token not available"
+
+#     headers = {
+#         'Authorization': f'Bearer {access_token}',
+#         'Content-Type': 'application/json'
+#     }
+
+#     # Combine date and time into ISO 8601 format without seconds
+#     start_date_time = f"{start_date}T{start_time[:5]}"  # Removing seconds
+#     end_date_time = f"{end_date}T{end_time[:5]}"        # Removing seconds
+
+#     # Prepare attendees, including those in CC
+#     all_attendees = [
+#         {
+#             'emailAddress': {
+#                 'address': attendee,
+#                 'name': ''
+#             },
+#             'type': 'required'
+#         } for attendee in attendees
+#     ] + [
+#         {
+#             'emailAddress': {
+#                 'address': cc,
+#                 'name': ''
+#             },
+#             'type': 'optional'  # CC recipients are marked as 'optional'
+#         } for cc in cc_recipients
+#     ]
+
+#     event = {
+#         'subject': subject,
+#         'start': {
+#             'dateTime': start_date_time,
+#             'timeZone': time_zone
+#         },
+#         'end': {
+#             'dateTime': end_date_time,
+#             'timeZone': time_zone
+#         },
+#         'attendees': all_attendees,
+#         'isOnlineMeeting': True,
+#         'onlineMeetingProvider': 'teamsForBusiness'
+#     }
+
+#     response = requests.post(
+#         f'https://graph.microsoft.com/v1.0/users/{recruiter_email}/events',
+#         headers=headers,
+#         data=json.dumps(event)
+#     )
+
+#     if response.status_code != 201:
+#         return None, f"Error creating event: {response.status_code} - {response.text}"
+    
+#     return response.json(), None
 
 # Function to update an event
 def update_event(event_id, subject, start_date, start_time, end_date, end_time, attendees, cc_recipients, recruiter_email, time_zone):
@@ -584,7 +683,6 @@ def delete_event(event_id, recruiter_email):
 
 
 
-# Route to create an event
 @app.route('/create_event', methods=['POST'])
 def handle_create_event():
     data = request.json
@@ -605,24 +703,32 @@ def handle_create_event():
     if not all([subject, start_date, start_time, end_date, end_time, attendees, recruiter_email]):
         return jsonify({'error': 'Missing required fields'}), 400
     
-    # Fetch recruiter_id based on recruiter_email
-    recruiter = db.session.query(User).filter_by(email=recruiter_email).first()
-    if recruiter:
-        recruiter_id = recruiter.id
-    else:
-        return jsonify({"error": "Recruiter not found"}), 404
+    # Combine date and time into ISO 8601 format
+    start_date_time_str = f"{start_date}T{start_time}:00"
+    end_date_time_str = f"{end_date}T{end_time}:00"
+
+    # Convert start and end times to IST
+    start_date_time_ist = convert_to_ist(start_date_time_str, time_zone)
+    end_date_time_ist = convert_to_ist(end_date_time_str, time_zone)
+
+    # Extract date and time portions for storage
+    start_date_ist = start_date_time_ist.strftime("%Y-%m-%d")
+    start_time_ist = start_date_time_ist.strftime("%H:%M:%S")
+    end_date_ist = end_date_time_ist.strftime("%Y-%m-%d")
+    end_time_ist = end_date_time_ist.strftime("%H:%M:%S")
     
     event_response, error = create_event(
         subject=subject,
-        start_date=start_date,
-        start_time=start_time,
-        end_date=end_date,
-        end_time=end_time,
+        start_date=start_date_ist,
+        start_time=start_time_ist,
+        end_date=end_date_ist,
+        end_time=end_time_ist,
         attendees=attendees,
         cc_recipients=cc_recipients,
         recruiter_email=recruiter_email,
-        time_zone=time_zone
+        time_zone="Asia/Kolkata"  # Use IST timezone
     )
+
     if event_response:
         event_id = event_response.get('id')
         
@@ -630,19 +736,26 @@ def handle_create_event():
         join_url = event_response.get('onlineMeeting', {}).get('joinUrl', '')
         print("join_url:", join_url)
 
+        # Query the recruiter based on their email
+        recruiter = db.session.query(User).filter_by(email=recruiter_email).first()
+        if recruiter:
+            recruiter_id = recruiter.id
+        else:
+            return jsonify({"error": "Recruiter not found"}), 404
+
         # Insert the event details into the scheduled_meeting table
         new_meeting = ScheduledMeeting(
             event_id=event_id,
             recruiter_id=recruiter_id,
             subject=subject,
-            start_date=start_date,
-            start_time=start_time,
-            end_date=end_date,
-            end_time=end_time,
+            start_date=start_date_ist,
+            start_time=start_time_ist,
+            end_date=end_date_ist,
+            end_time=end_time_ist,
             attendees=','.join(attendees),
             cc_recipients=','.join(cc_recipients),
             recruiter_email=recruiter_email,
-            time_zone=time_zone,
+            time_zone="Asia/Kolkata",  # Use IST timezone
             join_url=join_url  # Save joinUrl in the database
         )
 
@@ -656,6 +769,80 @@ def handle_create_event():
         }), 200
     else:
         return jsonify({'error': error}), 500
+
+
+# Route to create an event
+# @app.route('/create_event', methods=['POST'])
+# def handle_create_event():
+#     data = request.json
+    
+#     if not data:
+#         return jsonify({'error': 'Invalid request, no JSON body provided'}), 400
+    
+#     subject = data.get('subject')
+#     start_date = data.get('start_date')
+#     start_time = data.get('start_time')
+#     end_date = data.get('end_date')
+#     end_time = data.get('end_time')
+#     attendees = data.get('attendees')
+#     cc_recipients = data.get('cc_recipients', [])  # Defaults to an empty list if not provided
+#     recruiter_email = data.get('recruiter_email')
+#     time_zone = data.get('time_zone')  # Default to UTC if not provided
+    
+#     if not all([subject, start_date, start_time, end_date, end_time, attendees, recruiter_email]):
+#         return jsonify({'error': 'Missing required fields'}), 400
+    
+#     # Fetch recruiter_id based on recruiter_email
+#     recruiter = db.session.query(User).filter_by(email=recruiter_email).first()
+#     if recruiter:
+#         recruiter_id = recruiter.id
+#     else:
+#         return jsonify({"error": "Recruiter not found"}), 404
+    
+#     event_response, error = create_event(
+#         subject=subject,
+#         start_date=start_date,
+#         start_time=start_time,
+#         end_date=end_date,
+#         end_time=end_time,
+#         attendees=attendees,
+#         cc_recipients=cc_recipients,
+#         recruiter_email=recruiter_email,
+#         time_zone=time_zone
+#     )
+#     if event_response:
+#         event_id = event_response.get('id')
+        
+#         # Correctly extract joinUrl from the onlineMeeting field
+#         join_url = event_response.get('onlineMeeting', {}).get('joinUrl', '')
+#         print("join_url:", join_url)
+
+#         # Insert the event details into the scheduled_meeting table
+#         new_meeting = ScheduledMeeting(
+#             event_id=event_id,
+#             recruiter_id=recruiter_id,
+#             subject=subject,
+#             start_date=start_date,
+#             start_time=start_time,
+#             end_date=end_date,
+#             end_time=end_time,
+#             attendees=','.join(attendees),
+#             cc_recipients=','.join(cc_recipients),
+#             recruiter_email=recruiter_email,
+#             time_zone=time_zone,
+#             join_url=join_url  # Save joinUrl in the database
+#         )
+
+#         db.session.add(new_meeting)
+#         db.session.commit()
+        
+#         return jsonify({
+#             'message': 'Event created and saved successfully.',
+#             'event': event_response,
+#             'joinUrl': join_url
+#         }), 200
+#     else:
+#         return jsonify({'error': error}), 500
 
 
 # Route to update an event
