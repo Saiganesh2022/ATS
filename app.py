@@ -942,7 +942,6 @@ def handle_delete_event():
         return jsonify({'error': error}), 500
 
 
-
 @app.route('/get_all_meetings', methods=['POST'])
 def get_all_meetings():
     data = request.json
@@ -952,8 +951,7 @@ def get_all_meetings():
         return jsonify({'error': 'Missing recruiter_id field'}), 400
     
     try:
-        # Get all users associated with the recruiter_id # L1 - SELECTED					
-
+        # Get all users associated with the recruiter_id
         users = User.query.filter_by(id=recruiter_id).all()
         user_emails = {user.email for user in users}
 
@@ -984,9 +982,9 @@ def get_all_meetings():
                     'start_time': meeting.start_time.strftime('%H:%M:%S'),
                     'end_date': meeting.end_date.strftime('%Y-%m-%d'),
                     'end_time': meeting.end_time.strftime('%H:%M:%S'),
-                    'attendees': attendees,
-                    'cc_recipients': cc_recipients,
                     'recruiter_email': meeting.recruiter_email,
+                    'attendees': meeting.attendees,  # Already stored as a comma-separated string
+                   'cc_recipients': meeting.cc_recipients,  # Already stored as a comma-separated string
                     'time_zone': meeting.time_zone,
                     'join_url': meeting.join_url
                 }
@@ -999,6 +997,67 @@ def get_all_meetings():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# @app.route('/get_all_meetings', methods=['POST'])
+# def get_all_meetings():
+#     data = request.json
+#     recruiter_id = data.get('recruiter_id')
+    
+#     if not recruiter_id:
+#         return jsonify({'error': 'Missing recruiter_id field'}), 400
+    
+#     try:
+#         # Get all users associated with the recruiter_id # L1 - SELECTED					
+
+#         users = User.query.filter_by(id=recruiter_id).all()
+#         user_emails = {user.email for user in users}
+
+#         # Query the ScheduledMeeting table for all records
+#         all_meetings = ScheduledMeeting.query.all()
+
+#         # Filter meetings based on valid emails
+#         meetings_data = []
+#         for meeting in all_meetings:
+#             attendees = meeting.attendees.split(',') if meeting.attendees else []
+#             cc_recipients = meeting.cc_recipients.split(',') if meeting.cc_recipients else []
+
+#             # Check if any attendees or CC recipients are in the list of user emails
+#             valid_attendees = [email for email in attendees if email in user_emails]
+#             valid_cc_recipients = [email for email in cc_recipients if email in user_emails]
+
+#             # Check if recruiter_email is a valid user email
+#             valid_recruiter_email = meeting.recruiter_email in user_emails
+
+#             # Include the meeting if recruiter_email is valid, or if there are valid attendees or cc_recipients
+#             if valid_recruiter_email or valid_attendees or valid_cc_recipients:
+#                 meeting_dict = {
+#                     'meeting_id': meeting.id,
+#                     'event_id': meeting.event_id,
+#                     'recruiter_id': meeting.recruiter_id,
+#                     'subject': meeting.subject,
+#                     'start_date': meeting.start_date.strftime('%Y-%m-%d'),
+#                     'start_time': meeting.start_time.strftime('%H:%M:%S'),
+#                     'end_date': meeting.end_date.strftime('%Y-%m-%d'),
+#                     'end_time': meeting.end_time.strftime('%H:%M:%S'),
+#                     'attendees': attendees,
+#                     'cc_recipients': cc_recipients,
+#                     'recruiter_email': meeting.recruiter_email,
+#                     'time_zone': meeting.time_zone,
+#                     'join_url': meeting.join_url
+#                 }
+#                 meetings_data.append(meeting_dict)
+        
+#         if not meetings_data:
+#             return jsonify({'message': 'No relevant meetings found for this recruiter'}), 404
+        
+#         return jsonify({'meetings': meetings_data}), 200
+    
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
+
+
+
 
 
 # @app.route('/get_all_meetings', methods=['POST'])
