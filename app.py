@@ -982,7 +982,7 @@ def get_all_meetings():
                     'start_time': meeting.start_time.strftime('%H:%M:%S'),
                     'end_date': meeting.end_date.strftime('%Y-%m-%d'),
                     'end_time': meeting.end_time.strftime('%H:%M:%S'),
-                    'recruiter_email': meeting.recruiter_email,
+                    'email': meeting.recruiter_email,
                     'attendees': meeting.attendees,  # Already stored as a comma-separated string
                    'cc_recipients': meeting.cc_recipients,  # Already stored as a comma-separated string
                     'time_zone': meeting.time_zone,
