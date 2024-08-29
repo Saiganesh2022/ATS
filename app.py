@@ -51,9 +51,9 @@ import re
 from collections import Counter
 import math
 import google.generativeai as genai
-from sqlalchemy.ext.declarative import declarative_base
+# from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+# Base = declarative_base()
 
 
 app = Flask(__name__)
@@ -152,8 +152,8 @@ class User(db.Model):
         
 class Candidate(db.Model):
     __tablename__ = 'candidates'
-    # id = db.Column(db.Integer, primary_key=True)
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     job_id = db.Column(db.Integer)
     name = db.Column(db.String(100), nullable=False)
     mobile = db.Column(db.String(20), nullable=False)
