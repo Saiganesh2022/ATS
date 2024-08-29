@@ -51,6 +51,10 @@ import re
 from collections import Counter
 import math
 import google.generativeai as genai
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
 
 app = Flask(__name__)
 cors = CORS(app)
