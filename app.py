@@ -1651,7 +1651,6 @@ def generate_questions():
 
 ###############################################################################################
 
-
 # Extract text from PDF
 def extract_text_from_pdf(file_binary):
     text = ''
@@ -1979,6 +1978,335 @@ def check_resume_match():
     }
 
     return jsonify(response_data), 200
+############################################################################################################
+
+# # Extract text from PDF
+# def extract_text_from_pdf(file_binary):
+#     text = ''
+#     pdf_reader = PdfFileReader(BytesIO(file_binary))
+#     for page_num in range(pdf_reader.numPages):
+#         text += pdf_reader.getPage(page_num).extract_text()
+#     return text
+
+# # Extract text from DOCX
+# def extract_text_from_docx(file_binary):
+#     doc = docx.Document(BytesIO(file_binary))
+#     text = ''
+#     for para in doc.paragraphs:
+#         text += para.text
+#     return text
+
+# # Extract phone number
+# def extract_phone_number(text):
+#     phone_regex = r'[\+\(]?[1-9][0-9 .\-\(\)]{8,}[0-9]'
+#     phone_matches = re.findall(phone_regex, text)
+#     return phone_matches[-1].strip() if phone_matches else "No phone number found"
+
+# # Extract name
+# def extract_name(text):
+#     lines = text.split('\n')
+#     name_words = []
+
+#     for line in lines[:5]:
+#         if re.search(r'\b(phone|email)\b', line, re.IGNORECASE):
+#             continue
+        
+#         # Extract potential name words
+#         words = re.findall(r'\b[A-Za-z]+', line)
+#         name_words.extend(words)
+
+#         if len(name_words) >= 2:
+#             return ' '.join(name_words[:3]).rstrip('.,')
+
+#     return "No name found"
+
+# # Extract email
+# def extract_email(text):
+#     email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+#     email_matches = re.findall(email_regex, text)
+#     return email_matches[-1].rstrip('.,') if email_matches else "No email found"
+
+# # Extract text from resume
+# def extract_text_from_resume(file_binary):
+#     try:
+#         return extract_text_from_pdf(file_binary)
+#     except:
+#         pass
+#     try:
+#         return extract_text_from_docx(file_binary)
+#     except Exception:
+#         raise ValueError("Unsupported file format")
+
+# # Preprocess text
+# # def preprocess_text(text):
+# #     text = re.sub(r'\W+', ' ', text).lower().strip()
+# #     return text
+
+# # Get job details including Gemini sub-skills
+# def get_job_details(job_id):
+#     job_post = JobPost.query.filter_by(id=job_id).first()
+#     if not job_post:
+#         return None
+
+#     job_details = {
+#         'client': job_post.client,
+#         'detailed_jd': job_post.detailed_jd if job_post.detailed_jd else "",
+#         'skills': job_post.skills.split(', ') if job_post.skills else [],
+#         'experience_min': job_post.experience_min,
+#         'experience_max': job_post.experience_max
+#     }
+
+#     return job_details
+
+# # Generate sub-skills from Gemini
+# def generate_sub_skills_from_gemini(skill):
+#     api_key = "AIzaSyABp7NiK0EKISlDFq57qb9TKeXh8cm2M2o"
+#     genai.configure(api_key=api_key)
+#     model = genai.GenerativeModel('gemini-1.5-flash')
+
+#     # prompt = f"""
+#     # Given the following skills: {skill}, provide 10 related  technical topics for each technical skill, do not include soft skills (such as communication, fast learner). Present the output in the following format:
+
+#     # sub_categories = {{
+#     #     'Skill1': ['Topic1', 'Topic2', 'Topic3', ...],
+#     #     'Skill2': ['Topic1', 'Topic2', 'Topic3', ...],
+#     #     ...
+#     # }}
+#     # """
+
+#     prompt = f"""
+#     With the following skills: {skill}, outline the prerequisite technical skills and related branches. Ensure that soft skills (such as communication, fast learner) are not included. Structure the output as specified:
+
+#     sub_categories = {{
+#         'Skill1': ['Topic1', 'Topic2', 'Topic3', ...],
+#         'Skill2': ['Topic1', 'Topic2', 'Topic3', ...],
+#         ...
+#     }}
+#     """
+
+#     response = model.generate_content(prompt)
+#     response_text = response.candidates[0].content.parts[0].text.strip()
+
+#     match = re.search(r"sub_categories\s*=\s*({.*})", response_text, re.DOTALL)
+#     if match:
+#         response_dict_str = match.group(1).replace("'", "\"")
+#         try:
+#             response_dict = json.loads(response_dict_str)
+#         except json.JSONDecodeError as e:
+#             print(f"Error parsing response dictionary: {e}")
+#             return {}
+
+#         cleaned_dict = {key.strip(): [item.strip() for item in value] for key, value in response_dict.items()}
+#         print("cleaned_dict : ",cleaned_dict)
+#         return cleaned_dict
+#     else:
+#         return {}
+
+# # Extract skills from resume text
+# # def extract_skills_from_resume(resume_text, gemini_sub_skills):
+# #     resume_skills = set()
+# #     resume_text = preprocess_text(resume_text)
+# #     for skill, sub_skills in gemini_sub_skills.items():
+# #         if skill.lower() in resume_text:
+# #             resume_skills.add(skill.lower())
+# #         for sub_skill in sub_skills:
+# #             if sub_skill.lower() in resume_text:
+# #                 resume_skills.add(skill.lower())
+# #                 break
+# #     return list(resume_skills)
+
+
+# def preprocess_text(text):
+#     # Convert to lowercase
+#     text = text.lower()
+#     # # Remove special characters and numbers
+#     # text = re.sub(r'\W+', ' ', text)
+#     # # Remove extra whitespace
+#     # text = re.sub(r'\s+', ' ', text).strip()
+#     return text
+
+
+
+
+# def extract_skills_from_gemini_resume(resume_text, gemini_sub_skills):
+#     resume_skills = set()
+#     resume_text = preprocess_text(resume_text)
+    
+#     for skill, sub_skills in gemini_sub_skills.items():
+#         # Preprocess each subskill
+#         subskills_list = [preprocess_text(subskill) for subskill in sub_skills]
+        
+#         # Create a pattern that matches any of the subskills within a broader description
+#         combined_pattern = r'\b(?:' + '|'.join(re.escape(subskill) for subskill in subskills_list) + r')\b'
+        
+#         if re.search(combined_pattern, resume_text):
+#             resume_skills.add(skill)
+
+#     return list(resume_skills)
+
+
+
+# # Calculate skill match percentage
+# def calculate_skill_match_percentage(matched_skills, skills):
+#     if not skills:
+#         return 0
+#     return (len(matched_skills) / len(skills)) * 100
+
+
+
+# def extract_experience_from_resume(resume_text):
+#     experience_patterns = [
+#         r'(\d+(\.\d+)?)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*(?:month|months|mo|mos)?',
+#         r'(\d+)\s*(?:year|yr|years|yrs)?\s*(\d+)?\s*months?',
+#         r'(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)?',
+#         r'(\d+(\.\d+)?)\s*(?:-year)',
+#         r'Demonstrated\s+(\d+(\.\d+)?)\s*(?:year|years|yr|yrs)',
+#         r'(\d+(\.\d+)?)\s*(?:years|yr|yrs)?\s*of\s*experience',
+#         r'(\d+(\.\d+)?)\s*years?\s*of\s*(?:IT|technical)?\s*experience',
+#         r'(\d+)\s*-\s*(\d+)\s*(?:years|yrs|yr|months|mos|mo)?\s*experience',
+#         r'experience\s*of\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)',
+#         r'over\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)?\s*experience',
+#         r'(?:years|yrs|yr|months|mos|mo)\s*of\s*experience\s*(\d+(\.\d+)?)',
+#         r'(\d+)\s*(?:years|yrs|yr|months|mos|mo)\s*\(to\s*date\)',
+#         r'total\s*experience\s*of\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)',
+#         r'experience\s*(?:from|since)\s*\d{4}\s*to\s*\d{4}',
+#         r'around\s*(\d+(\.\d+)?)\s*(?:years|yrs|yr|months|mos|mo)?\s*of\s*experience'
+#     ]
+
+#     internship_pattern = r'\binternship\b|\bintern\b'
+#     phone_pattern = re.compile(r'\b(\+?\d[\d\-\.\s]+)?\d{10}\b')
+
+#     internship_match = re.search(internship_pattern, resume_text, re.IGNORECASE)
+#     if internship_match:
+#         return 0
+
+#     resume_text_no_phone = phone_pattern.sub('', resume_text)
+#     for pattern in experience_patterns:
+#         match = re.search(pattern, resume_text_no_phone, re.IGNORECASE)
+#         if match:
+#             years = float(match.group(1))
+#             months = int(match.group(3) or 0) if len(match.groups()) > 2 else 0
+#             total_months = int(years * 12) + months
+#             if total_months < 600:
+#                 return total_months
+
+#     return 0
+
+# # Merge periods
+# def merge_periods(periods):
+#     periods.sort(key=lambda x: x[0])
+#     merged = []
+#     for current in periods:
+#         if not merged:
+#             merged.append(current)
+#         else:
+#             last = merged[-1]
+#             if current[0] <= last[1]:
+#                 merged[-1] = (last[0], max(last[1], current[1]))
+#             else:
+#                 merged.append(current)
+#     return merged
+
+# @app.route('/check_resume_match', methods=['POST'])
+# def check_resume_match():
+#     data = request.json
+#     job_id = data.get('job_id')
+#     user_id = data.get('user_id')
+#     candidate_experience_str = data.get('candidate_experence')
+#     print("candidate_experience_str  :",candidate_experience_str)
+    
+#     if 'resume' not in data:
+#         return jsonify({'error': 'No resume provided in the request'}), 400
+
+#     try:
+#         resume_binary = base64.b64decode(data['resume'])
+#     except Exception as e:
+#         return jsonify({'error': f'Error decoding base64 resume: {str(e)}'}), 400
+
+#     try:
+#         resume_text = extract_text_from_resume(resume_binary)
+#     except ValueError as e:
+#         return jsonify({'error': str(e)}), 400
+
+#     candidate_name = extract_name(resume_text)
+#     candidate_phone = extract_phone_number(resume_text)
+#     candidate_email = extract_email(resume_text)
+
+#     job_details = get_job_details(job_id)
+#     if not job_details:
+#         return jsonify({'error': 'Job details not found'}), 404
+
+#     gemini_sub_skills = {skill: generate_sub_skills_from_gemini(skill) for skill in job_details['skills']}
+#     matched_skills = extract_skills_from_gemini_resume(resume_text, gemini_sub_skills)
+    
+#     # print("Resume Text:", resume_text)  # Debug
+#     # print("Gemini Sub Skills:", gemini_sub_skills)  # Debug
+#     # print("Matched Skills:", matched_skills)  # Debug
+
+#     skill_match_percentage = calculate_skill_match_percentage(matched_skills, job_details['skills'])
+
+    
+
+#     # Convert candidate_experience_str to float or int if possible, or fallback to None
+#     if candidate_experience_str is not None and candidate_experience_str.strip():  # Check if not None and not empty
+#         try:
+#             candidate_experience = float(candidate_experience_str)
+#         except ValueError:
+#             candidate_experience = None
+#     else:
+#         candidate_experience = None
+    
+#     # Calculate candidate experience only if candidate_experience is None or not provided
+#     if candidate_experience is None or candidate_experience == 0.0:
+#         print("resume_text :",resume_text)
+#         candidate_experience_months = extract_experience_from_resume(resume_text)
+#         candidate_experience_years = candidate_experience_months / 12
+#         candidate_experience_formatted = f"{math.floor(candidate_experience_years)}.{candidate_experience_months % 12}"
+#     else:
+#         candidate_experience_months = int(float(candidate_experience) * 12)  # Convert years to months
+#         candidate_experience_years = candidate_experience_months / 12
+#         candidate_experience_formatted = f"{math.floor(candidate_experience_years)}.{candidate_experience_months % 12}"
+
+#     experience_min_months = int(float(job_details['experience_min']) * 12)
+#     experience_max_months = int(float(job_details['experience_max']) * 12)
+#     if candidate_experience_months >= experience_min_months and candidate_experience_months <= experience_max_months:
+#         experience_match_percentage = 100
+#         experience_unmatch_percentage = 0
+#     elif candidate_experience_months > experience_max_months:
+#         experience_match_percentage = 100
+#         experience_unmatch_percentage = 0
+#     else:
+#         if candidate_experience_months < experience_min_months:
+#             experience_match_percentage = (candidate_experience_months / experience_min_months) * 100
+#             experience_unmatch_percentage = 100 - experience_match_percentage
+#         elif candidate_experience_months > experience_max_months:
+#             experience_match_percentage = (experience_max_months / candidate_experience_months) * 100
+#             experience_unmatch_percentage = 100 - experience_match_percentage
+
+#     overall_match_percentage = (skill_match_percentage + experience_match_percentage) / 2
+
+#     response_data = {
+#         'client': job_details['client'],
+#         'detailed_jd': job_details['detailed_jd'],
+#         'experience_min': job_details['experience_min'],
+#         'experience_max': job_details['experience_max'],
+#         'skills': job_details['skills'],
+#         'skill_match_percentage': skill_match_percentage,
+#         'experience_match_percentage': experience_match_percentage,
+#         'experience_unmatch_percentage': experience_unmatch_percentage,
+#         'overall_match_percentage': overall_match_percentage,
+#         'matched_skills': matched_skills,
+#         'resume_skills': matched_skills,
+#         'gemini_sub_skills': gemini_sub_skills,
+#         'user_id': user_id,
+#         'job_id': job_id,
+#         'candidate_experience': candidate_experience_formatted,
+#         'candidate_name': candidate_name,
+#         'candidate_phone': candidate_phone,
+#         'candidate_email': candidate_email
+#     }
+
+#     return jsonify(response_data), 200
 
 
 #################################################################################################
