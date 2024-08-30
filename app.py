@@ -1584,7 +1584,8 @@ def generate_questions():
     prompt = f"{recruiter_prompt}\n\n{pdf_text}"
 
     # Configure and use Generative AI (assuming `genai` library setup)
-    api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
+    # api_key = "AIzaSyCaomq7mgoAeivD_sLaqGDpKrg77PcqE4s"
+    api_key = "AIzaSyAY5tgNliyJg_fAUEu0EeZNwFbH8dZscDc"
     if api_key is None:
         raise ValueError("API_KEY environment variable not set")
 
