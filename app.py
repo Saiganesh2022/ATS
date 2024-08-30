@@ -1731,7 +1731,8 @@ def get_job_details(job_id):
 
 # Generate sub-skills from Gemini
 def generate_sub_skills_from_gemini(skill):
-    api_key = "AIzaSyABp7NiK0EKISlDFq57qb9TKeXh8cm2M2o"
+    # api_key = "AIzaSyABp7NiK0EKISlDFq57qb9TKeXh8cm2M2o"
+    api_key = "AIzaSyAY5tgNliyJg_fAUEu0EeZNwFbH8dZscDc"
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
 
