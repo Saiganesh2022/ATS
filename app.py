@@ -1731,60 +1731,94 @@ def get_job_details(job_id):
     return job_details
 
 # Generate sub-skills from Gemini
+# def generate_sub_skills_from_gemini(skill):
+#     # api_key = "AIzaSyABp7NiK0EKISlDFq57qb9TKeXh8cm2M2o"
+#     api_key = "AIzaSyAY5tgNliyJg_fAUEu0EeZNwFbH8dZscDc"
+#     genai.configure(api_key=api_key)
+#     model = genai.GenerativeModel('gemini-1.5-flash')
+
+#     # prompt = f"""
+#     # Given the following skills: {skill}, provide 10 related  technical topics for each technical skill, do not include soft skills (such as communication, fast learner). Present the output in the following format:
+
+#     # sub_categories = {{
+#     #     'Skill1': ['Topic1', 'Topic2', 'Topic3', ...],
+#     #     'Skill2': ['Topic1', 'Topic2', 'Topic3', ...],
+#     #     ...
+#     # }}
+#     # """
+
+#     # prompt = f"""
+#     # With the following skills: {skill}, outline the prerequisite technical skills and related branches. Ensure that soft skills (such as communication, fast learner) are not included. Structure the output as specified:
+
+#     # sub_categories = {{
+#     #     'Skill1': ['Topic1', 'Topic2', 'Topic3', ...],
+#     #     'Skill2': ['Topic1', 'Topic2', 'Topic3', ...],
+#     #     ...
+#     # }}
+#     # """
+
+#     prompt = f"""
+#     With the following skills: {skill}, outline 30 prerequisite technical skills and related branches for each skill. Ensure that soft skills (such as communication, fast learner) are not included. Structure the output as specified:
+
+#     sub_categories = {{
+#         'Skill1': ['Topic1', 'Topic2', 'Topic3', ..., 'Topic30'],
+#         'Skill2': ['Topic1', 'Topic2', 'Topic3', ..., 'Topic30'],
+#         ...
+#     }}
+#     """
+
+
+#     response = model.generate_content(prompt)
+#     response_text = response.candidates[0].content.parts[0].text.strip()
+
+#     match = re.search(r"sub_categories\s*=\s*({.*})", response_text, re.DOTALL)
+#     if match:
+#         response_dict_str = match.group(1).replace("'", "\"")
+#         try:
+#             response_dict = json.loads(response_dict_str)
+#         except json.JSONDecodeError as e:
+#             print(f"Error parsing response dictionary: {e}")
+#             return {}
+
+#         cleaned_dict = {key.strip(): [item.strip() for item in value] for key, value in response_dict.items()}
+#         print("cleaned_dict : ",cleaned_dict)
+#         return cleaned_dict
+#     else:
+#         return {}
+
 def generate_sub_skills_from_gemini(skill):
-    # api_key = "AIzaSyABp7NiK0EKISlDFq57qb9TKeXh8cm2M2o"
+    # Configure the model
     api_key = "AIzaSyAY5tgNliyJg_fAUEu0EeZNwFbH8dZscDc"
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
 
-    # prompt = f"""
-    # Given the following skills: {skill}, provide 10 related  technical topics for each technical skill, do not include soft skills (such as communication, fast learner). Present the output in the following format:
-
-    # sub_categories = {{
-    #     'Skill1': ['Topic1', 'Topic2', 'Topic3', ...],
-    #     'Skill2': ['Topic1', 'Topic2', 'Topic3', ...],
-    #     ...
-    # }}
-    # """
-
-    # prompt = f"""
-    # With the following skills: {skill}, outline the prerequisite technical skills and related branches. Ensure that soft skills (such as communication, fast learner) are not included. Structure the output as specified:
-
-    # sub_categories = {{
-    #     'Skill1': ['Topic1', 'Topic2', 'Topic3', ...],
-    #     'Skill2': ['Topic1', 'Topic2', 'Topic3', ...],
-    #     ...
-    # }}
-    # """
-
+    # Construct the prompt
     prompt = f"""
-    With the following skills: {skill}, outline 30 prerequisite technical skills and related branches for each skill. Ensure that soft skills (such as communication, fast learner) are not included. Structure the output as specified:
+    With the following skill: {skill}, outline 30 prerequisite technical skills and related branches. Ensure that soft skills (such as communication, fast learner) are not included. Structure the output as specified:
 
     sub_categories = {{
-        'Skill1': ['Topic1', 'Topic2', 'Topic3', ..., 'Topic30'],
-        'Skill2': ['Topic1', 'Topic2', 'Topic3', ..., 'Topic30'],
-        ...
+        '{skill}': ['Topic1', 'Topic2', 'Topic3', ..., 'Topic30']
     }}
     """
 
+    try:
+        # Generate content from the model
+        response = model.generate_content(prompt)
+        response_text = response.candidates[0].content.parts[0].text.strip()
 
-    response = model.generate_content(prompt)
-    response_text = response.candidates[0].content.parts[0].text.strip()
-
-    match = re.search(r"sub_categories\s*=\s*({.*})", response_text, re.DOTALL)
-    if match:
-        response_dict_str = match.group(1).replace("'", "\"")
-        try:
+        # Improved regex to match and parse JSON-like structures
+        match = re.search(r"sub_categories\s*=\s*({.*})", response_text, re.DOTALL)
+        if match:
+            response_dict_str = match.group(1).replace("'", "\"")
             response_dict = json.loads(response_dict_str)
-        except json.JSONDecodeError as e:
-            print(f"Error parsing response dictionary: {e}")
-            return {}
+            cleaned_dict = {key.strip(): [item.strip() for item in value] for key, value in response_dict.items()}
+            return cleaned_dict
 
-        cleaned_dict = {key.strip(): [item.strip() for item in value] for key, value in response_dict.items()}
-        print("cleaned_dict : ",cleaned_dict)
-        return cleaned_dict
-    else:
-        return {}
+    except Exception as e:
+        print(f"Error generating sub-skills for {skill}: {e}")
+
+    return {}
+
 
 # Extract skills from resume text
 # def extract_skills_from_resume(resume_text, gemini_sub_skills):
