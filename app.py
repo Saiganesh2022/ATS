@@ -1747,15 +1747,26 @@ def generate_sub_skills_from_gemini(skill):
     # }}
     # """
 
+    # prompt = f"""
+    # With the following skills: {skill}, outline the prerequisite technical skills and related branches. Ensure that soft skills (such as communication, fast learner) are not included. Structure the output as specified:
+
+    # sub_categories = {{
+    #     'Skill1': ['Topic1', 'Topic2', 'Topic3', ...],
+    #     'Skill2': ['Topic1', 'Topic2', 'Topic3', ...],
+    #     ...
+    # }}
+    # """
+
     prompt = f"""
-    With the following skills: {skill}, outline the prerequisite technical skills and related branches. Ensure that soft skills (such as communication, fast learner) are not included. Structure the output as specified:
+    With the following skills: {skill}, outline 30 prerequisite technical skills and related branches for each skill. Ensure that soft skills (such as communication, fast learner) are not included. Structure the output as specified:
 
     sub_categories = {{
-        'Skill1': ['Topic1', 'Topic2', 'Topic3', ...],
-        'Skill2': ['Topic1', 'Topic2', 'Topic3', ...],
+        'Skill1': ['Topic1', 'Topic2', 'Topic3', ..., 'Topic30'],
+        'Skill2': ['Topic1', 'Topic2', 'Topic3', ..., 'Topic30'],
         ...
     }}
     """
+
 
     response = model.generate_content(prompt)
     response_text = response.candidates[0].content.parts[0].text.strip()
