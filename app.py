@@ -515,6 +515,7 @@ def search_resumes():
         Candidate.email,
         Candidate.mobile,
         Candidate.job_id,
+        Candidate.client,
         Candidate.profile,
         case(
             (Candidate.resume.isnot(None) & (Candidate.resume != b"")),  # If resume is binary
