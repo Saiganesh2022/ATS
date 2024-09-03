@@ -536,6 +536,7 @@ def search_resumes():
                     "email": candidate.email,
                     "mobile": candidate.mobile,
                     "job_id": candidate.job_id,
+                    "client":candidate.client,
                     "profile": candidate.profile,
                     "resume_present": candidate.resume_present,  # Use the value from the query
                     "candidate_skills": candidate.skills.split(", "),  # Original candidate skills
