@@ -51,6 +51,8 @@ import re
 from collections import Counter
 import math
 import google.generativeai as genai
+
+
 # from sqlalchemy.ext.declarative import declarative_base
 
 # Base = declarative_base()
@@ -410,7 +412,137 @@ class ScheduledMeeting(db.Model):
         self.join_url = join_url
 
 ###################################################################################################
+from functools import lru_cache
+from concurrent.futures import ThreadPoolExecutor
 
+@lru_cache(maxsize=100)
+def generate_skills_for_job_role(job_role: str) -> dict:
+    api_key = "AIzaSyDVMofXJ9iFFom9jQfWf8b79BVn_HJqOso"
+    if not api_key:
+        raise ValueError("API_KEY environment variable not set")
+
+    # Configure the genai API
+    genai.configure(api_key=api_key)
+    
+    # Create a model instance
+    model = genai.GenerativeModel('gemini-1.5-flash')
+
+    # Construct the prompt for the Generative AI model
+    prompt = f"""
+    Given the following job role: {job_role}, provide 20 related technical topics for the given job role. Exclude soft skills (such as communication, fast learner). Present the output in the following format:
+
+    sub_categories = {{
+        '{job_role}': ['Core Java', 'J2EE', 'Servlets', 'Spring Boot', 'JSP', 'MySQL', 'PostgreSQL', 'Docker', 'Jenkins', ...]
+    }}
+    """
+
+    # Generate content from the model
+    response = model.generate_content(prompt)
+    response_text = response.candidates[0].content.parts[0].text.strip()
+
+    # Extract the generated sub-categories from the response
+    match = re.search(r"sub_categories\s*=\s*({.*})", response_text, re.DOTALL)
+    if match:
+        response_dict_str = match.group(1).replace("'", "\"")
+        try:
+            response_dict = json.loads(response_dict_str)
+        except json.JSONDecodeError as e:
+            print(f"Error parsing response dictionary: {e}")
+            return {}
+
+        # Clean up and format the dictionary
+        cleaned_dict = {key.strip(): [item.strip().lower() for item in value] for key, value in response_dict.items()}
+        return cleaned_dict
+    else:
+        print("No valid sub-categories found in response.")
+        return {}
+
+def calculate_match_percentage(job_role: str, candidate_skills: str) -> tuple:
+    if not job_role or not candidate_skills:
+        print("Job role or candidate skills missing.")
+        return 0.0, [], {}
+
+    sub_skills_dict = generate_skills_for_job_role(job_role)
+    
+    if not sub_skills_dict:
+        print("No sub-skills dictionary generated.")
+        return 0.0, [], {}
+
+    candidate_skills_set = set(candidate_skills.lower().split(", "))
+    print(f"Candidate skills set: {candidate_skills_set}")
+
+    matched_skills = []
+    total_sub_skills = 0
+
+    for sub_skills in sub_skills_dict.values():
+        sub_skills_set = set(sub_skills)
+        total_sub_skills += len(sub_skills_set)
+        matched_skills.extend(list(sub_skills_set.intersection(candidate_skills_set)))
+        print("\n")
+        print(f"Sub-skills: {sub_skills_set}")
+        print("\n")
+        print(f"Matched skills: {matched_skills}")
+
+    if total_sub_skills == 0:
+        return 0.0, [], sub_skills_dict
+
+    match_percentage = (len(matched_skills) / total_sub_skills) * 100
+    print(f"Match percentage: {match_percentage}")
+    return round(match_percentage, 2), matched_skills, sub_skills_dict
+
+@app.route('/search_resumes', methods=['POST'])
+def search_resumes():
+    job_role = request.json.get('job_role')
+    if not job_role:
+        return jsonify({"error": "Job role is required"}), 400
+
+    print(f"Received job role: {job_role}")
+
+    # Generate skills for the job role
+    sub_skills_dict = generate_skills_for_job_role(job_role)
+    if not sub_skills_dict:
+        return jsonify({"error": "No skills found for the provided job role"}), 500
+
+    # Flatten the dictionary into a single list of skills
+    gemini_skills = set(skill for skills in sub_skills_dict.values() for skill in skills)
+
+    # Fetch only necessary columns to reduce overhead
+    candidates = Candidate.query.with_entities(
+        Candidate.id, Candidate.name, Candidate.skills, Candidate.email, Candidate.mobile, Candidate.job_id, Candidate.profile
+    ).all()
+    matching_resumes = []
+
+    def process_candidate(candidate):
+        if candidate.skills:
+            candidate_skills_set = set(candidate.skills.lower().split(", "))
+            gemini_skills_with_role = gemini_skills.union({job_role.lower()})
+            matched_skills = list(gemini_skills_with_role.intersection(candidate_skills_set))
+            if matched_skills:
+                match_percentage = (len(matched_skills) / len(gemini_skills_with_role)) * 100
+                return {
+                    "candidate_id": candidate.id,
+                    "candidate_name": candidate.name,
+                    "match_percentage": round(match_percentage, 2),
+                    "email": candidate.email,
+                    "mobile": candidate.mobile,
+                    "job_id": candidate.job_id,
+                    "profile": candidate.profile,
+                    "candidate_skills": candidate.skills.split(", "),  # Original candidate skills
+                    "matched_skills": matched_skills,  # Skills that matched with Gemini-generated skills
+                    "gemini_generated_skills": list(gemini_skills_with_role)  # Skills generated by Gemini for the job role plus job role itself
+                }
+        return None
+
+    with ThreadPoolExecutor(max_workers=1000) as executor:  # Adjust the number of workers based on your server capabilities
+        results = executor.map(process_candidate, candidates)
+    
+    matching_resumes = [result for result in results if result]
+    matching_resumes = sorted(matching_resumes, key=lambda x: x["match_percentage"], reverse=True)
+
+    print(f"Matching resumes: {matching_resumes}")
+    return jsonify(matching_resumes)
+
+####################################################################################################
 
 from flask import Flask, request, jsonify
 import requests
