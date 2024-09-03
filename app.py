@@ -5420,6 +5420,7 @@ import json
 from sqlalchemy import and_
 
 
+# Define your utility functions
 def get_common_candidate_data(candidate):
     return {
         'id': candidate.id,
@@ -5500,39 +5501,42 @@ def date_handler(obj):
         return None
 
 def fetch_recruiter_data(user_id):
-    recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
-    if recruiter:
-        recruiters = recruiter.username.split(',')
-        candidates = Candidate.query.filter(
-            and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None))
-        ).order_by(
+    with app.app_context():
+        recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
+        if recruiter:
+            recruiters = recruiter.username.split(',')
+            candidates = Candidate.query.filter(
+                and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None))
+            ).order_by(
+                desc(case((Candidate.data_updated_date != None, Candidate.data_updated_date), else_=Candidate.date_created)),
+                desc(case((Candidate.data_updated_time != None, Candidate.data_updated_time), else_=Candidate.time_created)),
+                desc(Candidate.id)
+            ).all()
+            jobs_query = JobPost.query.filter(
+                or_(*[JobPost.recruiter.like(f"%{recruiter}%") for recruiter in recruiters])
+            )
+            jobs = jobs_query.all()
+            return recruiter, candidates, jobs
+        return None, [], []
+
+def fetch_management_data():
+    with app.app_context():
+        users = User.query.all()
+        candidates = Candidate.query.filter(Candidate.reference.is_(None)).order_by(
             desc(case((Candidate.data_updated_date != None, Candidate.data_updated_date), else_=Candidate.date_created)),
             desc(case((Candidate.data_updated_time != None, Candidate.data_updated_time), else_=Candidate.time_created)),
             desc(Candidate.id)
         ).all()
-        jobs_query = JobPost.query.filter(
-            or_(*[JobPost.recruiter.like(f"%{recruiter}%") for recruiter in recruiters])
-        )
-        jobs = jobs_query.all()
-        return recruiter, candidates, jobs
-    return None, [], []
-
-def fetch_management_data():
-    users = User.query.all()
-    candidates = Candidate.query.filter(Candidate.reference.is_(None)).order_by(
-        desc(case((Candidate.data_updated_date != None, Candidate.data_updated_date), else_=Candidate.date_created)),
-        desc(case((Candidate.data_updated_time != None, Candidate.data_updated_time), else_=Candidate.time_created)),
-        desc(Candidate.id)
-    ).all()
-    jobs = JobPost.query.all()
-    return users, candidates, jobs
+        jobs = JobPost.query.all()
+        return users, candidates, jobs
 
 def fetch_other_user_data(user_name):
-    return Candidate.query.filter_by(recruiter=user_name).order_by(
-        desc(case((Candidate.data_updated_date != None, Candidate.data_updated_date), else_=Candidate.date_created)),
-        desc(case((Candidate.data_updated_time != None, Candidate.data_updated_time), else_=Candidate.time_created)),
-        desc(Candidate.id)
-    ).all()
+    with app.app_context():
+        return Candidate.query.filter_by(recruiter=user_name).order_by(
+            desc(case((Candidate.data_updated_date != None, Candidate.data_updated_date), else_=Candidate.date_created)),
+            desc(case((Candidate.data_updated_time != None, Candidate.data_updated_time), else_=Candidate.time_created)),
+            desc(Candidate.id)
+        ).all()
 
 @app.route('/dashboard', methods=['POST'])
 def dashboard():
