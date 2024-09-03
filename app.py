@@ -5556,7 +5556,7 @@ def dashboard():
 
     response_data = {}
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=1000) as executor:
         if user_type == 'recruiter':
             future_recruiter_data = executor.submit(fetch_recruiter_data, user_id)
             recruiter, candidates, jobs = future_recruiter_data.result()
