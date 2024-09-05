@@ -519,6 +519,7 @@ def search_resumes():
         Candidate.job_id,
         Candidate.profile,
         Candidate.date_created,
+        Candidate.data_updated_date,
         Candidate.status,  # Include status
         case(
             (Candidate.resume.isnot(None) & (Candidate.resume != b"")),
@@ -528,7 +529,7 @@ def search_resumes():
 
     def process_candidate(candidate):
         # Unpack the tuple
-        candidate_id, client, name, skills, email, mobile, job_id, profile, date_created, status, resume_present = candidate
+        candidate_id, client, name, skills, email, mobile, job_id, profile, date_created, data_updated_date, status, resume_present = candidate
 
         formatted_date_created = date_created.strftime('%Y-%m-%d') if date_created else None
 
@@ -547,6 +548,7 @@ def search_resumes():
                     "job_id": job_id,
                     "client": client,
                     "date_created": formatted_date_created,
+                    "data_updated_date": data_updated_date,
                     "status": status,
                     "profile": profile,
                     "resume_present": resume_present,
