@@ -532,6 +532,7 @@ def search_resumes():
         candidate_id, client, name, skills, email, mobile, job_id, profile, date_created, data_updated_date, status, resume_present = candidate
 
         formatted_date_created = date_created.strftime('%Y-%m-%d') if date_created else None
+        formatted_data_updated_date = data_updated_date.strftime('%Y-%m-%d') if data_updated_date else None
 
         if skills:
             candidate_skills_set = set(skills.lower().split(", "))
@@ -548,7 +549,7 @@ def search_resumes():
                     "job_id": job_id,
                     "client": client,
                     "date_created": formatted_date_created,
-                    "data_updated_date": data_updated_date,
+                    "data_updated_date": formatted_data_updated_date,
                     "status": status,
                     "profile": profile,
                     "resume_present": resume_present,
