@@ -10606,7 +10606,7 @@ def apply_careers():
             db.session.commit()
 
             try:
-                msg = Message('Successful Submission of Your Job Application', sender=config.sender_email', recipients=[email])
+                msg = Message('Successful Submission of Your Job Application', sender=config.sender_email, recipients=[email])
                 msg.body = f"Dear { name },\n Congratulations! Your job application has been successfully submitted for the position at {client} for the role of {profile}. We appreciate your interest in joining our team.\n\n  Our dedicated recruiter will review your application, and you can expect to hear from us within the next 24 hours.\n\nBest wishes for your application process!\n\n Regards, \n\nTeam\nMakonis Talent Track Pro\nrecruiterpro@makonissoft.com\n"
                 mail.send(msg)
             except Exception as e:
