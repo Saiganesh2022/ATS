@@ -52,6 +52,7 @@ from collections import Counter
 import math
 import google.generativeai as genai
 from details import config
+import docx2txt
 
 
 # from sqlalchemy.ext.declarative import declarative_base
@@ -10853,21 +10854,39 @@ def extract_text_from_pdf(file):
 def extract_text_from_docx(file):
     """
     Extract text from a DOCX file.
-    
+   
     Parameters:
         file (BytesIO): DOCX file-like object.
-    
+   
     Returns:
         str: Extracted text.
     """
     text = ""
     try:
-        doc = Document(file)
-        for paragraph in doc.paragraphs:
-            text += paragraph.text + '\n'
+        text = docx2txt.process(file)
     except Exception as e:
         print(f"Error extracting text from DOCX: {e}")
     return text
+
+
+# def extract_text_from_docx(file):
+#     """
+#     Extract text from a DOCX file.
+    
+#     Parameters:
+#         file (BytesIO): DOCX file-like object.
+    
+#     Returns:
+#         str: Extracted text.
+#     """
+#     text = ""
+#     try:
+#         doc = Document(file)
+#         for paragraph in doc.paragraphs:
+#             text += paragraph.text + '\n'
+#     except Exception as e:
+#         print(f"Error extracting text from DOCX: {e}")
+#     return text
 
 def extract_skills_from_resume(text, skills_list):
     found_skills = [skill for skill in skills_list if skill.lower() in text.lower()]
